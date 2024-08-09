@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioDeepFake</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+
+<body>
+    <header id="header">
+        <div class="logo-text">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="AudioDeepFake">
+            <h1>AudioDeepFake</h1>
+        </div>
+        <nav>
+            <a href="#home" id="link-home">Home</a>
+            <a href="#introduce" id="link-introduce">Introduce</a>
+            <a href="#character" id="link-character">Character</a>
+            <a href="#video" id="link-video">Video</a>
+            <a href="#contact" id="link-contact">Contact</a>
+        </nav>
+    </header>
+    <div id="home" class="container1 home-image-container">
+        <img src="{{ url_for('static', filename='images/home.jpg') }}" alt="Home Image" class="home-image">
+        <div class="Welcome">Welcome!<br>AudioDeepFake</div>
+        <div class="bottom-right-button">
+            <button>Let's Start</button>
+        </div>
+    </div>
+    <div id="introduce" class="section section-light">
+        <h2 class="bubble-text text">Introduce</h2>
+        <p>簡要介紹 DeepFake 音頻技術和網站的功能。</p>
+    </div>
+    <div id="character" class="character"
+        style="background-image:url('static/images/bg.png');background-repeat:no-repeat;background-position:center center;background-size:cover;position:relative;padding: 60px 20px;">
+
+        <h2 class="bubble-text text">Character</h2>
+        <div class="card-container">
+
+            <!-- 第一个卡片 -->
+            <div class="card" style="background-image: url('static/images/image1.jpg');">
+                <div class="dark-overlay"></div>
+                <div class="content">
+                    <h3>老高</h3>
+                    <p>0/50</p>
+                    <a href="#video" class="go-button" id="go-laogao">Go</a>
+                </div>
+            </div>
+            <!-- 第二个卡片 -->
+            <div class="card" style="background-image: url('static/images/image2.jpg');">
+                <div class="dark-overlay"></div>
+                <div class="content">
+                    <h3>陳文茜</h3>
+                    <p>0/50</p>
+                    <a href="#video" class="go-button" id="go-chenwenqian">Go</a>
+                </div>
+            </div>
+            <!-- 第三个卡片 -->
+            <div class="card" style="background-image: url('image3.jpg');">
+                <div class="content">
+                    <h2>03</h2>
+                    <h3>Card Three</h3>
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Enim mollitia recusandae atque eum unde quaerat laboriosam possimus!
+                        Possimus id excepturi quisquam quae blanditiis dolor fugiat,
+                        magni quaerat nihil saepe cumque.</p>
+                    <a href="#">Read More</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div id="video" class="section section-light video-section">
+        <h2 class="bubble-text text">Video</h2>
+        <div id="video-card-container" class="video-card-container"></div>
+    </div>
+    <div id="contact" class="section section-dark">
+        <h2 class="bubble-text text">Contact</h2>
+        <form class="contact-form">
+            <input type="text" placeholder="Your Name" required>
+            <input type="email" placeholder="Your Email" required>
+            <textarea placeholder="Your Message" required></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 AudioDeepFake. All rights reserved.</p>
+    </footer>
+    <script>
+        function createClickEffect(x, y) {
+            var effect = document.createElement('div');
+            effect.className = 'clickEffect';
+            document.body.appendChild(effect);
+
+            effect.style.left = (x - 20) + 'px';
+            effect.style.top = (y - 20) + 'px';
+
+            var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
+            effect.style.borderColor = randomColor;
+
+            effect.addEventListener('animationend', function () {
+                document.body.removeChild(effect);
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            createClickEffect(event.pageX, event.pageY);
+        });
+
+        var style = document.createElement('style');
+        style.textContent = `
+            .clickEffect {
+                position: absolute;
+                width: 65px;
+                height: 65px;
+                border: 1px solid transparent;
+                border-radius: 50%;
+                animation: clickEffectAnimation 0.5s ease-out;
+                pointer-events: none;
+                box-sizing: border-box;
+            }
+            @keyframes clickEffectAnimation {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1.5);
+                    opacity: 0;
+                }
+            }`;
+        document.head.appendChild(style);
+        document.addEventListener("scroll", function () {
+            const sections = document.querySelectorAll(".section, .container");
+            const links = {
+                "home": document.getElementById("link-home"),
+                "introduce": document.getElementById("link-introduce"),
+                "character": document.getElementById("link-character"),
+                "video": document.getElementById("link-video"),
+                "contact": document.getElementById("link-contact"),
+            };
+
+            let activeLink = null;
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 50 && rect.bottom >= 50) {
+                    activeLink = links[section.id];
+                }
+            });
+
+            Object.values(links).forEach(link => {
+                if (link === activeLink) {
+                    link.classList.add("active");
+                } else {
+                    link.classList.remove("active");
+                }
+            });
+        });
+
+        function splitTextIntoSpans(target) {
+            let elements = document.querySelectorAll(target);
+            elements.forEach((element) => {
+                element.classList.add('split-text');
+                let text = element.innerText;
+                let splitText = text
+                    .split(" ")
+                    .map(function (word) {
+                        let char = word.split('').map(char => {
+                            return `<span class="split-char">${char}</span>`;
+                        }).join('');
+                        return `<div class="split-word">${char}&nbsp</div>`;
+                    }).join('');
+
+                element.innerHTML = splitText;
+            });
+        }
+        splitTextIntoSpans('.bubble-text');
+
+        document.getElementById('go-laogao').addEventListener('click', function () {
+            document.getElementById('video-card-container').innerHTML = `
+                <div class="card">
+                    <h3>老高</h3>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/vu1H39yi1Pc?si=OEJuj19GErHf9BVa" 
+                    title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; 
+                    encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen></iframe>
+                    <button id="play-game-button"class="boton-elegante">Play</button>
+                </div>`;
+
+            document.getElementById('play-game-button').addEventListener('click', function () {
+                window.open('/game', '_blank');
+            });
+        });
+
+
+        document.getElementById('go-chenwenqian').addEventListener('click', function () {
+            document.getElementById('video-card-container').innerHTML = `
+        <div class="card">
+            <h3>陳文茜</h3>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/mTMAGLM0u38?si=RHCS2ZQ0UQqAa5O4" 
+            title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; 
+            encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen></iframe>
+            
+            <button onclick="window.open('/game', '_blank')">Play Game</button>
+        </div>`;
+        });
+
+    </script>
+</body>
+
+</html>
