@@ -29,11 +29,35 @@ load_checkpoint(model, checkpoint_path)
 def index():
     return render_template('index.html')
 
+current_index = 0
+
+def get_audio_path():
+    """按顺序随机选择 T1 或 F1 文件夹中的 WAV 文件"""
+    global current_index
+    
+    # 定义文件夹和文件名的模板
+    folder_options = ["T1", "F1"]
+    file_template = "{folder}_{index}.wav"
+    
+    # 随机选择一个文件夹
+    selected_folder = random.choice(folder_options)
+    
+    base_path = "audio/Target2"
+    # 构建完整的文件路径
+    audio_path = os.path.join(base_path, selected_folder, file_template.format(folder=selected_folder, index=current_index))
+    
+    audio_path = audio_path.replace("\\", "/")
+    print(f"Audio Path: {audio_path}")  # 添加调试信息
+    
+    # 增加索引，以便下次选择下一个文件
+    current_index += 1
+    
+    return audio_path
+
 @app.route('/game')
 def game():
-    # 传递 WAV 文件路径给前端
-    audio_path = "audio/Target2/T1/T1_0.wav"  # 这里是你要传递的路径
-    print(f"Audio Path: {audio_path}")  # 添加调试信息
+    """处理 /game 请求并渲染模板"""
+    audio_path = get_audio_path()  # 调用获取路径的功能
     return render_template('game2.html', audio_path=audio_path)
 
 
