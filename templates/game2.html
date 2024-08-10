@@ -178,6 +178,7 @@
             0% {
                 opacity: 1;
             }
+
             100% {
                 opacity: 0;
             }
@@ -213,12 +214,20 @@
 
     <div class="battle-area">
         <div class="player">
-            <div class="hp-bar"><div id="player-hp" class="hp-fill">10 HP</div></div>
-            <div class="shake-little"><div id="player-img"></div></div>
+            <div class="hp-bar">
+                <div id="player-hp" class="hp-fill">10 HP</div>
+            </div>
+            <div class="shake-little">
+                <div id="player-img"></div>
+            </div>
         </div>
         <div class="ai">
-            <div class="hp-bar"><div id="ai-hp" class="hp-fill">10 HP</div></div>
-            <div class="shake-little"><div id="ai-img"></div></div>
+            <div class="hp-bar">
+                <div id="ai-hp" class="hp-fill">10 HP</div>
+            </div>
+            <div class="shake-little">
+                <div id="ai-img"></div>
+            </div>
         </div>
     </div>
 
@@ -244,7 +253,7 @@
         const hpPercentage = (currentHP / maxHP) * 100;
         hpElement.style.width = hpPercentage + '%';
         hpElement.textContent = currentHP + ' HP';
-        
+
     }
     //根據扣血震動效果
     function triggerFlickerEffect(elementId) {
@@ -312,27 +321,27 @@
 
     //mouse 點擊特效
     function createClickEffect(x, y) {
-            var effect = document.createElement('div');
-            effect.className = 'clickEffect';
-            document.body.appendChild(effect);
+        var effect = document.createElement('div');
+        effect.className = 'clickEffect';
+        document.body.appendChild(effect);
 
-            effect.style.left = (x - 20) + 'px';
-            effect.style.top = (y - 20) + 'px';
+        effect.style.left = (x - 20) + 'px';
+        effect.style.top = (y - 20) + 'px';
 
-            var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
-            effect.style.borderColor = randomColor;
+        var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
+        effect.style.borderColor = randomColor;
 
-            effect.addEventListener('animationend', function () {
-                document.body.removeChild(effect);
-            });
-        }
-
-        document.addEventListener('click', function (event) {
-            createClickEffect(event.pageX, event.pageY);
+        effect.addEventListener('animationend', function () {
+            document.body.removeChild(effect);
         });
+    }
 
-        var style = document.createElement('style');
-        style.textContent = `
+    document.addEventListener('click', function (event) {
+        createClickEffect(event.pageX, event.pageY);
+    });
+
+    var style = document.createElement('style');
+    style.textContent = `
             .clickEffect {
                 position: absolute;
                 width: 65px;
@@ -353,8 +362,91 @@
                     opacity: 0;
                 }
             }`;
-        document.head.appendChild(style);
+    document.head.appendChild(style);
+    // 引導步驟的內容和目標元素
+    const guideSteps = [
+        {
+            elementId: 'btn1',
+            message: '這個按鈕判斷音頻是否為全真。',
+        },
+        {
+            elementId: 'btn2',
+            message: '這個按鈕判斷音頻是否為合成。',
+        },
+        {
+            elementId: 'audio-icon',
+            message: '點擊這裡播放或暫停音頻。',
+        },
+        {
+            elementId: 'player-hp',
+            message: '這是玩家的血量條，隨著點擊按鈕會減少。',
+        },
+        {
+            elementId: 'ai-hp',
+            message: '這是AI的血量條，隨著點擊按鈕會減少。',
+        }
+    ];
 
+    let currentStep = 0;
+
+    // 創建引導覆蓋層
+    const guideOverlay = document.createElement('div');
+    guideOverlay.style.position = 'fixed';
+    guideOverlay.style.top = 0;
+    guideOverlay.style.left = 0;
+    guideOverlay.style.width = '100%';
+    guideOverlay.style.height = '100%';
+    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    guideOverlay.style.zIndex = 1000;
+    guideOverlay.style.display = 'flex';
+    guideOverlay.style.justifyContent = 'center';
+    guideOverlay.style.alignItems = 'center';
+    guideOverlay.style.color = '#fff';
+    guideOverlay.style.textAlign = 'center';
+    guideOverlay.style.padding = '20px';
+    guideOverlay.style.cursor = 'pointer';
+    document.body.appendChild(guideOverlay);
+
+    // 添加引導文本
+    const guideText = document.createElement('div');
+    guideText.style.maxWidth = '600px';
+    guideText.style.fontSize = '24px';
+    guideOverlay.appendChild(guideText);
+
+    // 顯示當前步驟
+    function showGuideStep(step) {
+        const { elementId, message } = guideSteps[step];
+        const element = document.getElementById(elementId);
+        
+        // 高亮顯示目標元素
+        element.style.zIndex = 1001;
+        element.style.position = 'relative';
+        element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
+        
+        // 顯示訊息
+        guideText.textContent = message;
+
+        // 覆蓋層點擊後進入下一步
+        guideOverlay.onclick = () => {
+            // 移除高亮效果
+            element.style.zIndex = '';
+            element.style.boxShadow = '';
+            currentStep++;
+            if (currentStep < guideSteps.length) {
+                showGuideStep(currentStep);
+            } else {
+                endGuide();
+            }
+        };
+    }
+
+    // 結束引導
+    function endGuide() {
+        document.body.removeChild(guideOverlay);
+    }
+
+    // 啟動引導
+    showGuideStep(currentStep);
 </script>
 
 </html>
