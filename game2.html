@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="csshake.min.css">
+    <!-- or from surge.sh -->
+    <link rel="stylesheet" type="text/css" href="https://csshake.surge.sh/csshake.min.css">
+    <title>Game Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+        }
+
+        .header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 10px;
+            background-color: #282c34;
+            color: #fff;
+        }
+
+        .audio {
+            position: relative;
+        }
+
+        .player .hp-bar,
+        .ai .hp-bar {
+            position: absolute;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .player .hp-bar {
+            top: 80px;
+            left: 200px;
+            width: 250px;
+        }
+
+        .ai .hp-bar {
+            top: -20px;
+            left: 250px;
+            width: 250px;
+        }
+
+        .hp-fill {
+            height: 100%;
+            background-color: red;
+            text-align: center;
+            line-height: 20px;
+            color: #000;
+            font-weight: bold;
+            transition: width 0.3s ease-in-out;
+        }
+
+        .battle-area {
+            display: flex;
+            justify-content: space-between;
+            height: 350px;
+            padding: 20px;
+            background-color: #222;
+            background-image: url('static\\images\\background.png');
+            position: relative;
+        }
+
+        .player,
+        .ai {
+            width: 45%;
+            text-align: center;
+            color: #fff;
+            position: relative;
+        }
+
+        #player-img,
+        #ai-img {
+            height: 350px;
+            width: 350px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            z-index: 10;
+        }
+
+        #player-img {
+            background-image: url('static\\images\\pokemon1.png');
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #ai-img {
+            background-image: url('static\\images\\pokemon4.png');
+            top: -30px;
+            right: -40px;
+            transform: translateX(-50%);
+        }
+
+        .footer {
+            background-color: #333;
+            padding: 20px;
+            color: #000;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .waveform-card {
+            width: 70%;
+            border-radius: 30px;
+            background: #212121;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25),
+                -15px -15px 30px rgb(60, 60, 60);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #waveform {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .footer .controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .footer .controls button {
+            width: 220px;
+            height: 170px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin: 0 20px;
+            display: inline-block;
+            text-align: center;
+            font-size: 24px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #btn1 {
+            background-image: url('static/images/o.png');
+        }
+
+        #btn2 {
+            background-image: url('static/images/x.png');
+        }
+
+        .footer .controls button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Flicker effect on attack */
+        .shake-opacity {
+            animation: flicker 0.2s alternate 5;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #audio-icon {
+            width: 40px;
+            height: 40px;
+            left: 20%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+
+        #play-icon {
+            background-image: url('static/images/play-icon.png');
+        }
+
+        #pause-icon {
+            background-image: url('static/images/pause-icon.png');
+        }
+    </style>
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="audio">
+            <div id="audio-icon" class="play-icon"></div>
+        </div>
+    </div>
+
+    <div class="battle-area">
+        <div class="player">
+            <div class="hp-bar">
+                <div id="player-hp" class="hp-fill">10 HP</div>
+            </div>
+            <div class="shake-little">
+                <div id="player-img"></div>
+            </div>
+        </div>
+        <div class="ai">
+            <div class="hp-bar">
+                <div id="ai-hp" class="hp-fill">10 HP</div>
+            </div>
+            <div class="shake-little">
+                <div id="ai-img"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="waveform-card">
+            <div id="waveform"></div>
+        </div>
+        <div class="controls">
+            <button id="btn1"></button>
+            <button id="btn2"></button>
+        </div>
+    </div>
+
+</body>
+<script>
+    document.getElementById('audio-icon').addEventListener('click', togglePlayPause);
+    var playerHP = 10;
+    var aiHP = 10;
+
+    function updateHPBar(hpElementId, currentHP) {
+        const hpElement = document.getElementById(hpElementId);
+        const maxHP = 10;
+        const hpPercentage = (currentHP / maxHP) * 100;
+        hpElement.style.width = hpPercentage + '%';
+        hpElement.textContent = currentHP + ' HP';
+
+    }
+    //根據扣血震動效果
+    function triggerFlickerEffect(elementId) {
+        const element = document.getElementById(elementId);
+        element.classList.add('shake-opacity');
+        setTimeout(() => {
+            element.classList.remove('shake-opacity');
+        }, 1000);  // Duration matches the flicker animation
+    }
+
+    // Initial HP Bar Setup
+    updateHPBar('player-hp', playerHP);
+    updateHPBar('ai-hp', aiHP);
+
+    document.getElementById('btn1').addEventListener('click', function () {
+        playerHP = Math.max(0, playerHP - 1); // Reduces player HP
+        updateHPBar('player-hp', playerHP);
+        triggerFlickerEffect('player-img');
+    });
+
+    document.getElementById('btn2').addEventListener('click', function () {
+        aiHP = Math.max(0, aiHP - 1); // Reduces AI HP
+        updateHPBar('ai-hp', aiHP);
+        triggerFlickerEffect('ai-img');
+    });
+
+    // WaveSurfer setup  
+    var audioPath = "{{ url_for('static', filename=audio_path) }}";
+    console.log("Loaded audio path:", audioPath);
+
+    var wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        waveColor: '#fff',
+        progressColor: '#ccc',
+        height: 128
+    });
+
+    wavesurfer.load(audioPath);
+
+    // Auto-play the audio when the page loads
+    wavesurfer.on('ready', function () {
+        wavesurfer.play();
+        togglePlayPauseIcon();
+    });
+
+    // Toggle play/pause and change icon
+    function togglePlayPause() {
+        if (wavesurfer.isPlaying()) {
+            wavesurfer.pause();
+        } else {
+            wavesurfer.play();
+        }
+        togglePlayPauseIcon();
+    }
+
+    function togglePlayPauseIcon() {
+        const teamIcon = document.getElementById('audio-icon');
+        if (wavesurfer.isPlaying()) {
+            teamIcon.style.backgroundImage = "url('static/images/pause-icon.png')";
+        } else {
+            teamIcon.style.backgroundImage = "url('static/images/play-icon.png')";
+        }
+    }
+
+
+    //mouse 點擊特效
+    function createClickEffect(x, y) {
+        var effect = document.createElement('div');
+        effect.className = 'clickEffect';
+        document.body.appendChild(effect);
+
+        effect.style.left = (x - 20) + 'px';
+        effect.style.top = (y - 20) + 'px';
+
+        var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
+        effect.style.borderColor = randomColor;
+
+        effect.addEventListener('animationend', function () {
+            document.body.removeChild(effect);
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        createClickEffect(event.pageX, event.pageY);
+    });
+
+    var style = document.createElement('style');
+    style.textContent = `
+            .clickEffect {
+                position: absolute;
+                width: 65px;
+                height: 65px;
+                border: 1px solid transparent;
+                border-radius: 50%;
+                animation: clickEffectAnimation 0.5s ease-out;
+                pointer-events: none;
+                box-sizing: border-box;
+            }
+            @keyframes clickEffectAnimation {
+                0% {
+                    transform: scale(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1.5);
+                    opacity: 0;
+                }
+            }`;
+    document.head.appendChild(style);
+    // 引導步驟的內容和目標元素
+    const guideSteps = [
+        {
+            elementId: 'btn1',
+            message: '這個按鈕判斷音頻是否為全真。',
+        },
+        {
+            elementId: 'btn2',
+            message: '這個按鈕判斷音頻是否為合成。',
+        },
+        {
+            elementId: 'audio-icon',
+            message: '點擊這裡播放或暫停音頻。',
+        },
+        {
+            elementId: 'player-hp',
+            message: '這是玩家的血量條，隨著點擊按鈕會減少。',
+        },
+        {
+            elementId: 'ai-hp',
+            message: '這是AI的血量條，隨著點擊按鈕會減少。',
+        }
+    ];
+
+    let currentStep = 0;
+
+    // 創建引導覆蓋層
+    const guideOverlay = document.createElement('div');
+    guideOverlay.style.position = 'fixed';
+    guideOverlay.style.top = 0;
+    guideOverlay.style.left = 0;
+    guideOverlay.style.width = '100%';
+    guideOverlay.style.height = '100%';
+    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    guideOverlay.style.zIndex = 1000;
+    guideOverlay.style.display = 'flex';
+    guideOverlay.style.justifyContent = 'center';
+    guideOverlay.style.alignItems = 'center';
+    guideOverlay.style.color = '#fff';
+    guideOverlay.style.textAlign = 'center';
+    guideOverlay.style.padding = '20px';
+    guideOverlay.style.cursor = 'pointer';
+    document.body.appendChild(guideOverlay);
+
+    // 添加引導文本
+    const guideText = document.createElement('div');
+    guideText.style.maxWidth = '600px';
+    guideText.style.fontSize = '24px';
+    guideOverlay.appendChild(guideText);
+
+    // 顯示當前步驟
+    function showGuideStep(step) {
+        const { elementId, message } = guideSteps[step];
+        const element = document.getElementById(elementId);
+        
+        // 高亮顯示目標元素
+        element.style.zIndex = 1001;
+        element.style.position = 'relative';
+        element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
+        
+        // 顯示訊息
+        guideText.textContent = message;
+
+        // 覆蓋層點擊後進入下一步
+        guideOverlay.onclick = () => {
+            // 移除高亮效果
+            element.style.zIndex = '';
+            element.style.boxShadow = '';
+            currentStep++;
+            if (currentStep < guideSteps.length) {
+                showGuideStep(currentStep);
+            } else {
+                endGuide();
+            }
+        };
+    }
+
+    // 結束引導
+    function endGuide() {
+        document.body.removeChild(guideOverlay);
+    }
+
+    // 啟動引導
+    showGuideStep(currentStep);
+</script>
+
+</html>
