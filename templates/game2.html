@@ -2,11 +2,11 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="csshake.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="csshake.min.css" />
     <!-- or from surge.sh -->
-    <link rel="stylesheet" type="text/css" href="https://csshake.surge.sh/csshake.min.css">
+    <link rel="stylesheet" type="text/css" href="https://csshake.surge.sh/csshake.min.css" />
     <title>Game Interface</title>
     <style>
         body {
@@ -15,7 +15,7 @@
             padding: 0;
             background-color: #000;
         }
-
+        
         .header {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -23,11 +23,11 @@
             background-color: #282c34;
             color: #fff;
         }
-
+        
         .audio {
             position: relative;
         }
-
+        
         .player .hp-bar,
         .ai .hp-bar {
             position: absolute;
@@ -36,19 +36,19 @@
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-
+        
         .player .hp-bar {
-            top: 80px;
-            left: 200px;
+            top: 150px;
+            left: 35%;
             width: 250px;
         }
-
+        
         .ai .hp-bar {
             top: -20px;
-            left: 250px;
+            right: 20%;
             width: 250px;
         }
-
+        
         .hp-fill {
             height: 100%;
             background-color: red;
@@ -57,18 +57,19 @@
             color: #000;
             font-weight: bold;
             transition: width 0.3s ease-in-out;
+            /* 添加平滑动画 */
         }
-
+        
         .battle-area {
             display: flex;
             justify-content: space-between;
-            height: 350px;
+            height: 405px;
             padding: 20px;
             background-color: #222;
             background-image: url('static\\images\\background.png');
             position: relative;
         }
-
+        
         .player,
         .ai {
             width: 45%;
@@ -76,7 +77,7 @@
             color: #fff;
             position: relative;
         }
-
+        
         #player-img,
         #ai-img {
             height: 350px;
@@ -86,21 +87,21 @@
             position: absolute;
             z-index: 10;
         }
-
+        
         #player-img {
             background-image: url('static\\images\\pokemon1.png');
-            top: 70px;
+            top: 120px;
             left: 50%;
             transform: translateX(-50%);
         }
-
+        
         #ai-img {
             background-image: url('static\\images\\pokemon4.png');
             top: -30px;
-            right: -40px;
+            right: -5%;
             transform: translateX(-50%);
         }
-
+        
         .footer {
             background-color: #333;
             padding: 20px;
@@ -112,13 +113,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
+        
         .waveform-card {
             width: 70%;
             border-radius: 30px;
             background: #212121;
-            box-shadow: 15px 15px 30px rgb(25, 25, 25),
-                -15px -15px 30px rgb(60, 60, 60);
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -15px -15px 30px rgb(60, 60, 60);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -127,19 +127,19 @@
             align-items: center;
             justify-content: center;
         }
-
+        
         #waveform {
             width: 100%;
             margin-bottom: 20px;
         }
-
+        
         .footer .controls {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 20px;
         }
-
+        
         .footer .controls button {
             width: 220px;
             height: 170px;
@@ -156,34 +156,33 @@
             background-position: center;
             background-repeat: no-repeat;
         }
-
+        
         #btn1 {
             background-image: url('static/images/o.png');
         }
-
+        
         #btn2 {
             background-image: url('static/images/x.png');
         }
-
+        
         .footer .controls button:hover {
             transform: scale(1.1);
         }
-
         /* Flicker effect on attack */
+        
         .shake-opacity {
             animation: flicker 0.2s alternate 5;
         }
-
+        
         @keyframes flicker {
             0% {
                 opacity: 1;
             }
-
             100% {
                 opacity: 0;
             }
         }
-
+        
         #audio-icon {
             width: 40px;
             height: 40px;
@@ -192,24 +191,123 @@
             background-repeat: no-repeat;
             cursor: pointer;
         }
-
+        
         #play-icon {
             background-image: url('static/images/play-icon.png');
         }
-
+        
         #pause-icon {
             background-image: url('static/images/pause-icon.png');
+        }
+        
+        .turn-info {
+            position: fixed;
+            top: 20px;
+            right: 100%;
+            /* Start off-screen to the right */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            display: none;
+            /* Initially hidden */
+        }
+        
+        @keyframes slide-right-to-left {
+            0% {
+                right: 100%;
+                /* Start off-screen to the right */
+                opacity: 0;
+            }
+            25% {
+                right: 50%;
+                /* Center of the screen */
+                transform: translateX(-50%);
+                opacity: 1;
+            }
+            75% {
+                right: 50%;
+                /* Stay in the center */
+                transform: translateX(-50%);
+                opacity: 1;
+            }
+            100% {
+                right: -100%;
+                /* Move off-screen to the left */
+                transform: translateX(-50%);
+                opacity: 0;
+            }
+        }
+        
+        .turn-info.hidden {
+            top: -60px;
+            /* Move it off-screen when not active */
+        }
+        
+        .turn-info.show {
+            top: 20px;
+            /* Bring it back on-screen when active */
+        }
+        
+        .card-selection {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+        }
+        
+        .card {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .card:hover {
+            transform: scale(1.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #associated-text {
+            font-size: 24px;
+            white-space: pre-wrap;
+            color: white;
+            font-family: Arial, sans-serif;
+            /* 保持空格和换行符 */
+        }
+        
+        .letter {
+            display: inline-block;
+            opacity: 0;
+            transition: opacity 0.1s ease-in-out;
         }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
 </head>
 
 <body>
-
     <div class="header">
         <div class="audio">
             <div id="audio-icon" class="play-icon"></div>
         </div>
+    </div>
+    <div id="turn-info" class="turn-info">
+        <p id="turn-text">玩家回合</p>
     </div>
 
     <div class="battle-area">
@@ -229,61 +327,46 @@
                 <div id="ai-img"></div>
             </div>
         </div>
+        <div id="card-selection" class="card-selection hidden">
+            <div class="card" id="card1"></div>
+            <div class="card" id="card2"></div>
+            <div class="card" id="card3"></div>
+        </div>
     </div>
 
     <div class="footer">
         <div class="waveform-card">
-            <div id="waveform"></div>
+            <p id="associated-text"> {{ text }}</p>
+            <div id="waveform" data-audio-path="{{ url_for('static', filename=audio_path) }}"></div>
         </div>
         <div class="controls">
-            <button id="btn1"></button>
-            <button id="btn2"></button>
+            <button id="btn1" class="btnclass"></button>
+            <button id="btn2" class="btnclass"></button>
         </div>
     </div>
-
+    <div id="subtitles" style="color: white; text-align: center; margin-top: 10px;"></div>
 </body>
 <script>
-    document.getElementById('audio-icon').addEventListener('click', togglePlayPause);
+    // ---- 全局变量定义 ----
     var playerHP = 10;
-    var aiHP = 10;
+    var playerATK = 1;
+    var playerMax = 10;
+    var aiHP = 2;
+    var aiMax = 2;
+    var turnGlo = 1;
+    let aiFainted = false;
+    const availableItems = ['increase_hp_max', 'restore_hp', 'increase_attack', 'multi_attack'];
+    let playerItems = [];
+    var modelPrediction = '';
+    var actualType = '';
+    var playerPrediction = '';
 
-    function updateHPBar(hpElementId, currentHP) {
-        const hpElement = document.getElementById(hpElementId);
-        const maxHP = 10;
-        const hpPercentage = (currentHP / maxHP) * 100;
-        hpElement.style.width = hpPercentage + '%';
-        hpElement.textContent = currentHP + ' HP';
+    // ---- 初始化HP条 ----
+    updateHPBar('player-hp', playerHP, playerMax); // Player 的最大血量为 10
+    updateHPBar('ai-hp', aiHP, aiMax); // AI 的最大血量为 2
 
-    }
-    //根據扣血震動效果
-    function triggerFlickerEffect(elementId) {
-        const element = document.getElementById(elementId);
-        element.classList.add('shake-opacity');
-        setTimeout(() => {
-            element.classList.remove('shake-opacity');
-        }, 1000);  // Duration matches the flicker animation
-    }
-
-    // Initial HP Bar Setup
-    updateHPBar('player-hp', playerHP);
-    updateHPBar('ai-hp', aiHP);
-
-    document.getElementById('btn1').addEventListener('click', function () {
-        playerHP = Math.max(0, playerHP - 1); // Reduces player HP
-        updateHPBar('player-hp', playerHP);
-        triggerFlickerEffect('player-img');
-    });
-
-    document.getElementById('btn2').addEventListener('click', function () {
-        aiHP = Math.max(0, aiHP - 1); // Reduces AI HP
-        updateHPBar('ai-hp', aiHP);
-        triggerFlickerEffect('ai-img');
-    });
-
-    // WaveSurfer setup  
-    var audioPath = "{{ url_for('static', filename=audio_path) }}";
-    console.log("Loaded audio path:", audioPath);
-
+    // ---- WaveSurfer 音频播放器设置 ----
+    var audioPath = "{{ url_for('static', filename=audio_path) }}"
     var wavesurfer = WaveSurfer.create({
         container: '#waveform',
         waveColor: '#fff',
@@ -291,15 +374,53 @@
         height: 128
     });
 
+    // 加载音频并在页面加载时自动播放
     wavesurfer.load(audioPath);
-
-    // Auto-play the audio when the page loads
-    wavesurfer.on('ready', function () {
+    wavesurfer.on('ready', function() {
         wavesurfer.play();
         togglePlayPauseIcon();
+        const initialText = document.querySelector('#associated-text').textContent;
+        if (initialText) {
+            showTextAnimated(initialText);
+        }
+    });
+    wavesurfer.setVolume(1);
+    wavesurfer.on('error', function(error) {
+        console.error('WaveSurfer Error:', error);
     });
 
-    // Toggle play/pause and change icon
+    wavesurfer.on('ready', function() {
+        console.log('Duration:', wavesurfer.getDuration()); // 打印音频的时长
+        wavesurfer.play();
+    });
+
+    wavesurfer.on('play', function() {
+        console.log('Playback started');
+    });
+
+    wavesurfer.on('audioprocess', function() {
+        console.log('Current Time:', wavesurfer.getCurrentTime());
+    });
+
+    wavesurfer.on('finish', function() {
+        console.log('Playback finished');
+    });
+
+    // ---- 事件监听器 ----
+    document.getElementById('audio-icon').addEventListener('click', togglePlayPause);
+    document.getElementById('btn1').addEventListener('click', function() {
+        playerPrediction = 'r';
+        evaluateGuess(1);
+    });
+    document.getElementById('btn2').addEventListener('click', function() {
+        playerPrediction = 'f';
+        evaluateGuess(1);
+    });
+    document.addEventListener('click', function(event) {
+        createClickEffect(event.pageX, event.pageY);
+    });
+
+    // ---- 音频播放/暂停功能 ----
     function togglePlayPause() {
         if (wavesurfer.isPlaying()) {
             wavesurfer.pause();
@@ -318,78 +439,379 @@
         }
     }
 
+    // ---- 回合切换及评估 ----
+    function updateTurn(turnGlo) {
+        const turnInfo = document.getElementById('turn-info');
+        const turnText = document.getElementById('turn-text');
+        if (turnGlo === 1) {
+            turnText.textContent = '玩家回合';
+            disableButtons(false); // 启用按钮，允许玩家操作
+        } else if (turnGlo === 2) {
+            disableButtons(true); // 禁用按钮，防止玩家操作
+            turnText.textContent = '模型回合';
+            setTimeout(() => {
+                evaluateGuess(2); // 模拟模型的决策过程
+            }, 4000); // 延时模拟模型计算时间
+        }
+        showTurnInfo(turnInfo);
+    }
 
-    //mouse 點擊特效
+    function evaluateGuess(turnGlo) {
+        const btn1 = document.getElementById('btn1');
+        const btn2 = document.getElementById('btn2');
+
+        if (turnGlo === 1) {
+            // 玩家的回合
+            if (playerPrediction === actualType) {
+                console.log('Player win');
+                aiHP = Math.max(0, aiHP - playerATK); // 减少 AI 的 HP
+                updateHPBar('ai-hp', aiHP, aiMax);
+                triggerFlickerEffect('ai-img');
+
+                if (playerPrediction === 'r') {
+                    btn1.style.backgroundColor = 'green'; // 正确时btn1变为绿色
+                } else {
+                    btn2.style.backgroundColor = 'green'; // 正确时btn2变为绿色
+                }
+
+                // 当AI的血量清0时
+                if (aiHP === 0) {
+                    handleAIFaint(); // 处理AI失败后的逻辑
+                }
+            } else {
+                console.log('Player wrong');
+                if (playerPrediction === 'r') {
+                    btn1.style.backgroundColor = 'red'; // 错误时btn1变为红色
+                } else {
+                    btn2.style.backgroundColor = 'red'; // 错误时btn2变为红色
+                }
+            }
+
+            setTimeout(() => {
+                btn1.style.backgroundColor = ''; // 2秒后恢复原始颜色
+                btn2.style.backgroundColor = ''; // 2秒后恢复原始颜色
+            }, 2000);
+
+            turnGlo = 2;
+            updateTurn(turnGlo);
+        } else if (turnGlo === 2) {
+            // 模型的回合
+            if (modelPrediction === actualType) {
+                console.log('model win');
+                playerHP = Math.max(0, playerHP - 1); // 减少玩家的 HP
+                updateHPBar('player-hp', playerHP, playerMax);
+                triggerFlickerEffect('player-img');
+            } else {
+                console.log('model wrong');
+            }
+
+            turnGlo = 1;
+            updateTurn(turnGlo); // 更新回合信息并启动玩家的回合
+            startCountdownOrKeyPress();
+        }
+    }
+
+    function triggerPredict() {
+        fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify() // 这里的 body 需要根据后端期待的数据格式来调整
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Prediction:', data.aiprediction);
+                console.log('Actual:', data.audiotype);
+                updatePredictions(data.aiprediction, data.audiotype);
+            })
+            .catch((error) => console.error('Error predicting audio:', error));
+    }
+
+    // ---- HP条和震动效果 ----
+    function updateHPBar(hpElementId, currentHP, maxHP) {
+        const hpElement = document.getElementById(hpElementId);
+        const hpPercentage = (currentHP / maxHP) * 100;
+        hpElement.style.width = hpPercentage + '%'; // 根据百分比调整宽度
+        hpElement.textContent = currentHP + ' HP'; // 显示当前的 HP
+
+        // 判断HP是否为0，如果为0则更换图片
+        if (currentHP === 0) {
+            if (hpElementId === 'player-hp') {
+                document.getElementById('player-img').style.backgroundImage = "url('static/images/pokemon1_fainted.png')";
+            } else if (hpElementId === 'ai-hp') {
+                document.getElementById('ai-img').style.backgroundImage = "url('static/images/pokemon4_fainted.png')";
+            }
+        }
+    }
+
+    function triggerFlickerEffect(elementId) {
+        const element = document.getElementById(elementId);
+        element.classList.add('shake-opacity');
+        setTimeout(() => {
+            element.classList.remove('shake-opacity');
+        }, 1000); // Duration matches the flicker animation
+    }
+
+    // ---- 模型预测及回合更新 ----
+    function updatePredictions(prediction, actual) {
+        modelPrediction = prediction;
+        actualType = actual;
+    }
+
+    function handleAIFaint() {
+        const aiImgElement = document.getElementById('ai-img');
+        const currentBackgroundImage = aiImgElement.style.backgroundImage;
+
+        // 根据当前图片路径选择相应的fainted图像
+        if (currentBackgroundImage.includes('pokemon2.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon2_fainted.png')";
+        } else if (currentBackgroundImage.includes('pokemon3.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon3_fainted.png')";
+        } else if (currentBackgroundImage.includes('pokemon4.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon4_fainted.png')";
+        }
+
+        aiFainted = true; // 标记AI已经失败
+
+        if (playerItems.length < 4) { // 如果玩家的道具数量少于4个，显示卡片选择框
+            showCardSelection();
+        }
+    }
+
+    function handleAINewPokemon() {
+        const newPokemon = Math.floor(Math.random() * 3) + 2; // 随机选择2到4之间的整数
+        const newImageUrl = `static/images/pokemon${newPokemon}.png`;
+        document.getElementById('ai-img').style.backgroundImage = `url('${newImageUrl}')`;
+
+        // 增加AI的最大HP并重置当前HP
+        aiMax += 2; // 增加AI的最大HP
+        aiHP = aiMax;
+        updateHPBar('ai-hp', aiHP, aiMax);
+
+        console.log(`AI has a new Pokemon with max HP: ${aiMax}`);
+    }
+
+    // ---- 倒计时及下一个音频加载 ----
+    function startCountdownOrKeyPress() {
+        let countdown = 20; // 20秒倒计时
+        const countdownElement = document.createElement('div');
+        countdownElement.style.position = 'fixed';
+        countdownElement.style.bottom = '10px';
+        countdownElement.style.right = '10px';
+        countdownElement.style.fontSize = '24px';
+        countdownElement.style.color = 'white';
+        document.body.appendChild(countdownElement);
+
+        const intervalId = setInterval(() => {
+            countdownElement.textContent = `Next audio in ${countdown--}s...`;
+            if (countdown < 0) {
+                clearInterval(intervalId);
+                document.body.removeChild(countdownElement);
+                loadNextAudio(); // 倒计时结束后加载新音频
+            }
+        }, 1000);
+
+        // 监听按键或鼠标点击中断倒计时
+        function interruptCountdown() {
+            clearInterval(intervalId);
+            document.body.removeChild(countdownElement);
+            loadNextAudio(); // 中断后加载新音频
+
+            document.removeEventListener('keydown', interruptCountdown);
+            document.removeEventListener('mousedown', interruptCountdown);
+        }
+
+        document.addEventListener('keydown', interruptCountdown, {
+            once: true
+        });
+        document.addEventListener('mousedown', interruptCountdown, {
+            once: true
+        });
+    }
+
+    function loadNextAudio() {
+        fetch('/game') // 重新请求 /game 以获取新音频路径和对应文字
+            .then(response => response.text())
+            .then(html => {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(html, 'text/html');
+
+                var newAudioPath = doc.querySelector('#waveform').getAttribute('data-audio-path');
+                var newText = doc.querySelector('#associated-text').textContent;
+
+                if (newAudioPath && newAudioPath !== "null") {
+                    wavesurfer.load(newAudioPath);
+                    wavesurfer.on('ready', function() {
+                        wavesurfer.play(); // 自动播放新加载的音频
+                        togglePlayPauseIcon();
+                        showTextAnimated(newText);
+
+                        if (aiFainted) {
+                            handleAINewPokemon();
+                            aiFainted = false; // 重置标志
+                        }
+                    });
+                } else {
+                    console.error("Failed to load new audio path. Path is null or undefined.");
+                }
+            })
+            .catch(error => console.error('Error loading next audio:', error));
+    }
+
+    // ---- 卡片选择及道具效果 ----
+    function showCardSelection() {
+        const cardSelection = document.getElementById('card-selection');
+        const selectedItems = getRandomItems(availableItems, 3);
+
+        document.getElementById('card1').textContent = getItemDisplayName(selectedItems[0]);
+        document.getElementById('card1').setAttribute('onclick', `selectCard('${selectedItems[0]}')`);
+
+        document.getElementById('card2').textContent = getItemDisplayName(selectedItems[1]);
+        document.getElementById('card2').setAttribute('onclick', `selectCard('${selectedItems[1]}')`);
+
+        document.getElementById('card3').textContent = getItemDisplayName(selectedItems[2]);
+        document.getElementById('card3').setAttribute('onclick', `selectCard('${selectedItems[2]}')`);
+
+        cardSelection.classList.remove('hidden');
+    }
+
+    function getRandomItems(array, num) {
+        const result = [];
+        const clonedArray = [...array];
+        for (let i = 0; i < num; i++) {
+            const randomIndex = Math.floor(Math.random() * clonedArray.length);
+            result.push(clonedArray[randomIndex]);
+            clonedArray.splice(randomIndex, 1); // 移除已选择的项目，防止重复
+        }
+        return result;
+    }
+
+    function getItemDisplayName(item) {
+        switch (item) {
+            case 'increase_hp_max':
+                return '增加最大 HP';
+            case 'restore_hp':
+                return '回復 HP';
+            case 'increase_attack':
+                return '增加攻擊力';
+            case 'multi_attack':
+                return '連擊攻擊';
+            default:
+                return '';
+        }
+    }
+
+    function selectCard(item) {
+        if (playerItems.length < 4) {
+            playerItems.push(item);
+            applyItemEffect(item);
+        }
+
+        const cardSelection = document.getElementById('card-selection');
+        cardSelection.classList.add('hidden');
+
+        loadNextAudio();
+    }
+
+    function applyItemEffect(item) {
+        switch (item) {
+            case 'increase_hp_max':
+                playerMax += 2; // 增加最大 HP
+                break;
+            case 'restore_hp':
+                playerHP = Math.min(playerMax, playerHP + 5); // 恢复 5 HP
+                break;
+            case 'increase_attack':
+                playerATK += 1; // 增加攻击力
+                break;
+            case 'multi_attack':
+                // 设置连击攻击效果的逻辑
+                break;
+        }
+        updateHPBar('player-hp', playerHP, playerMax); // 更新血条
+    }
+
+    // ---- 文本显示动画 ----
+    function showTextAnimated(text) {
+        const container = document.getElementById('associated-text');
+        container.innerHTML = ''; // 清空之前的文字
+        for (let i = 0; i < text.length; i++) {
+            const span = document.createElement('span');
+            span.textContent = text[i];
+            span.className = 'letter';
+            container.appendChild(span);
+        }
+
+        const letters = container.querySelectorAll('.letter');
+        letters.forEach((letter, index) => {
+            setTimeout(() => {
+                letter.style.opacity = 1;
+            }, index * 100); // 每个字母的显示间隔为100毫秒
+        });
+    }
+
+    // ---- 视觉效果 ----
     function createClickEffect(x, y) {
         var effect = document.createElement('div');
         effect.className = 'clickEffect';
         document.body.appendChild(effect);
 
-        effect.style.left = (x - 20) + 'px';
-        effect.style.top = (y - 20) + 'px';
+        effect.style.left = x - 20 + 'px';
+        effect.style.top = y - 20 + 'px';
 
         var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
         effect.style.borderColor = randomColor;
 
-        effect.addEventListener('animationend', function () {
+        effect.addEventListener('animationend', function() {
             document.body.removeChild(effect);
         });
     }
 
-    document.addEventListener('click', function (event) {
-        createClickEffect(event.pageX, event.pageY);
-    });
-
     var style = document.createElement('style');
     style.textContent = `
-            .clickEffect {
-                position: absolute;
-                width: 65px;
-                height: 65px;
-                border: 1px solid transparent;
-                border-radius: 50%;
-                animation: clickEffectAnimation 0.5s ease-out;
-                pointer-events: none;
-                box-sizing: border-box;
-            }
-            @keyframes clickEffectAnimation {
-                0% {
-                    transform: scale(0);
-                    opacity: 1;
-                }
-                100% {
-                    transform: scale(1.5);
-                    opacity: 0;
-                }
-            }`;
+                    .clickEffect {
+                        position: absolute;
+                        width: 65px;
+                        height: 65px;
+                        border: 1px solid transparent;
+                        border-radius: 50%;
+                        animation: clickEffectAnimation 0.5s ease-out;
+                        pointer-events: none;
+                        box-sizing: border-box;
+                    }
+                    @keyframes clickEffectAnimation {
+                        0% {
+                            transform: scale(0);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: scale(1.5);
+                            opacity: 0;
+                        }
+                    }`;
     document.head.appendChild(style);
-    // 引導步驟的內容和目標元素
-    const guideSteps = [
-        {
-            elementId: 'btn1',
-            message: '這個按鈕判斷音頻是否為全真。',
-        },
-        {
-            elementId: 'btn2',
-            message: '這個按鈕判斷音頻是否為合成。',
-        },
-        {
-            elementId: 'audio-icon',
-            message: '點擊這裡播放或暫停音頻。',
-        },
-        {
-            elementId: 'player-hp',
-            message: '這是玩家的血量條，隨著點擊按鈕會減少。',
-        },
-        {
-            elementId: 'ai-hp',
-            message: '這是AI的血量條，隨著點擊按鈕會減少。',
-        }
-    ];
+
+    // ---- 引导功能 ----
+    const guideSteps = [{
+        elementId: 'btn1',
+        message: '這個按鈕判斷音頻是否為全真。'
+    }, {
+        elementId: 'btn2',
+        message: '這個按鈕判斷音頻是否為合成。'
+    }, {
+        elementId: 'audio-icon',
+        message: '點擊這裡播放或暫停音頻。'
+    }, {
+        elementId: 'player-hp',
+        message: '這是玩家的血量條，隨著點擊按鈕會減少。'
+    }, {
+        elementId: 'ai-hp',
+        message: '這是AI的血量條，隨著點擊按鈕會減少。'
+    }];
 
     let currentStep = 0;
 
-    // 創建引導覆蓋層
     const guideOverlay = document.createElement('div');
     guideOverlay.style.position = 'fixed';
     guideOverlay.style.top = 0;
@@ -407,28 +829,25 @@
     guideOverlay.style.cursor = 'pointer';
     document.body.appendChild(guideOverlay);
 
-    // 添加引導文本
     const guideText = document.createElement('div');
     guideText.style.maxWidth = '600px';
     guideText.style.fontSize = '24px';
     guideOverlay.appendChild(guideText);
 
-    // 顯示當前步驟
     function showGuideStep(step) {
-        const { elementId, message } = guideSteps[step];
+        const {
+            elementId,
+            message
+        } = guideSteps[step];
         const element = document.getElementById(elementId);
-        
-        // 高亮顯示目標元素
+
         element.style.zIndex = 1001;
         element.style.position = 'relative';
         element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
-        
-        // 顯示訊息
+
         guideText.textContent = message;
 
-        // 覆蓋層點擊後進入下一步
         guideOverlay.onclick = () => {
-            // 移除高亮效果
             element.style.zIndex = '';
             element.style.boxShadow = '';
             currentStep++;
@@ -440,13 +859,38 @@
         };
     }
 
-    // 結束引導
     function endGuide() {
         document.body.removeChild(guideOverlay);
     }
 
-    // 啟動引導
     showGuideStep(currentStep);
+
+    // ---- 辅助函数 ----
+    function showTurnInfo(turnInfo) {
+        turnInfo.classList.add('show');
+        setTimeout(() => {
+            turnInfo.classList.remove('show');
+        }, 3000);
+        turnInfo.style.display = 'block';
+        turnInfo.style.animation = 'none';
+
+        void turnInfo.offsetWidth; // 强制重排来重置动画
+
+        turnInfo.style.animation = 'slide-right-to-left 3s forwards';
+
+        turnInfo.addEventListener('animationend', () => {
+            turnInfo.style.display = 'none';
+        }, {
+            once: true
+        });
+    }
+
+    function disableButtons(disable) {
+        const buttons = document.querySelectorAll('.btnclass');
+        buttons.forEach((button) => {
+            button.disabled = disable;
+        });
+    }
 </script>
 
 </html>
