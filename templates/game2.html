@@ -364,6 +364,7 @@
     // ---- 初始化HP条 ----
     updateHPBar('player-hp', playerHP, playerMax); // Player 的最大血量为 10
     updateHPBar('ai-hp', aiHP, aiMax); // AI 的最大血量为 2
+    triggerPredict()
 
     // ---- WaveSurfer 音频播放器设置 ----
     var audioPath = "{{ url_for('static', filename=audio_path) }}"
@@ -384,27 +385,7 @@
             showTextAnimated(initialText);
         }
     });
-    wavesurfer.setVolume(1);
-    wavesurfer.on('error', function(error) {
-        console.error('WaveSurfer Error:', error);
-    });
 
-    wavesurfer.on('ready', function() {
-        console.log('Duration:', wavesurfer.getDuration()); // 打印音频的时长
-        wavesurfer.play();
-    });
-
-    wavesurfer.on('play', function() {
-        console.log('Playback started');
-    });
-
-    wavesurfer.on('audioprocess', function() {
-        console.log('Current Time:', wavesurfer.getCurrentTime());
-    });
-
-    wavesurfer.on('finish', function() {
-        console.log('Playback finished');
-    });
 
     // ---- 事件监听器 ----
     document.getElementById('audio-icon').addEventListener('click', togglePlayPause);
