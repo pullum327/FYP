@@ -282,6 +282,11 @@
         .hidden {
             display: none;
         }
+        /* 或者你可以改为更具描述性的名字 */
+        
+        .judgment-hidden {
+            display: none;
+        }
         
         #associated-text {
             font-size: 24px;
@@ -295,6 +300,24 @@
             display: inline-block;
             opacity: 0;
             transition: opacity 0.1s ease-in-out;
+        }
+        
+        .judgment-bubble {
+            position: absolute;
+            top: 20%;
+            right: 20%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .judgment-bubble.show {
+            opacity: 1;
         }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
@@ -320,6 +343,9 @@
             </div>
         </div>
         <div class="ai">
+            <div id="ai-judgment-bubble" class="judgment-bubble hidden">
+                <p id="judgment-text"></p>
+            </div>
             <div class="hp-bar">
                 <div id="ai-hp" class="hp-fill">10 HP</div>
             </div>
@@ -340,11 +366,11 @@
             <div id="waveform" data-audio-path="{{ url_for('static', filename=audio_path) }}"></div>
         </div>
         <div class="controls">
-            <button id="btn1" class="btnclass"></button>
-            <button id="btn2" class="btnclass"></button>
+            <button id="btn1" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Correct.mp3') }}"></button>
+            <button id="btn2" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Wrong.mp3') }}"></button>
         </div>
     </div>
-    <div id="subtitles" style="color: white; text-align: center; margin-top: 10px;"></div>
+    <audio id="audioPlayer" src=""></audio>
 </body>
 <script>
     // ---- 全局变量定义 ----
@@ -364,6 +390,7 @@
     // ---- 初始化HP条 ----
     updateHPBar('player-hp', playerHP, playerMax); // Player 的最大血量为 10
     updateHPBar('ai-hp', aiHP, aiMax); // AI 的最大血量为 2
+    // ---- Predict设置 ----
     triggerPredict()
 
     // ---- WaveSurfer 音频播放器设置 ----
@@ -420,6 +447,12 @@
         }
     }
 
+    function playAudio(audioPath) {
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = audioPath;
+        audioPlayer.play();
+    }
+
     // ---- 回合切换及评估 ----
     function updateTurn(turnGlo) {
         const turnInfo = document.getElementById('turn-info');
@@ -437,22 +470,28 @@
         showTurnInfo(turnInfo);
     }
 
-    function evaluateGuess(turnGlo) {
+    async function evaluateGuess(turnGlo) {
         const btn1 = document.getElementById('btn1');
         const btn2 = document.getElementById('btn2');
+        const correctAudioPath = btn1.getAttribute('data-audio-path');
+        const wrongAudioPath = btn2.getAttribute('data-audio-path');
+        const heart = "static/audio/heart.wav";
 
         if (turnGlo === 1) {
             // 玩家的回合
             if (playerPrediction === actualType) {
                 console.log('Player win');
                 aiHP = Math.max(0, aiHP - playerATK); // 减少 AI 的 HP
+                await playAudio(heart);
                 updateHPBar('ai-hp', aiHP, aiMax);
                 triggerFlickerEffect('ai-img');
 
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'green'; // 正确时btn1变为绿色
+                    await playAudio(correctAudioPath);
                 } else {
                     btn2.style.backgroundColor = 'green'; // 正确时btn2变为绿色
+                    await playAudio(correctAudioPath);
                 }
 
                 // 当AI的血量清0时
@@ -463,8 +502,10 @@
                 console.log('Player wrong');
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'red'; // 错误时btn1变为红色
+                    await playAudio(wrongAudioPath);
                 } else {
                     btn2.style.backgroundColor = 'red'; // 错误时btn2变为红色
+                    await playAudio(wrongAudioPath);
                 }
             }
 
@@ -480,10 +521,13 @@
             if (modelPrediction === actualType) {
                 console.log('model win');
                 playerHP = Math.max(0, playerHP - 1); // 减少玩家的 HP
+                playAudio(heart);
                 updateHPBar('player-hp', playerHP, playerMax);
                 triggerFlickerEffect('player-img');
+                showAIJudgment('全真音频');
             } else {
                 console.log('model wrong');
+                showAIJudgment('合成音频');
             }
 
             turnGlo = 1;
@@ -539,6 +583,48 @@
         modelPrediction = prediction;
         actualType = actual;
     }
+    // ---- AI预测anime ----
+    function showAIJudgment(judgmentText) {
+        const judgmentContainer = document.createElement('div');
+        judgmentContainer.style.position = 'fixed';
+        judgmentContainer.style.top = '20%';
+        judgmentContainer.style.right = '18%';
+        judgmentContainer.style.transform = 'translate(-50%, -50%)'; // 居中显示
+        judgmentContainer.style.zIndex = '1000'; // 保证在最前面显示
+        judgmentContainer.style.width = '200px'; // 根据需求调整大小
+        judgmentContainer.style.height = '200px';
+        judgmentContainer.style.backgroundImage = "url('static/images/b.png')";
+        judgmentContainer.style.backgroundSize = 'contain';
+        judgmentContainer.style.backgroundRepeat = 'no-repeat';
+        judgmentContainer.style.backgroundPosition = 'center';
+
+        // 添加判断结果的图像
+        const overlayImage = document.createElement('img');
+        overlayImage.style.position = 'absolute';
+        overlayImage.style.width = '80px'; // 可以根据需求调整大小
+        overlayImage.style.height = '80px';
+        overlayImage.style.top = '40%';
+        overlayImage.style.right = '11%';
+        overlayImage.style.transform = 'translate(-50%, -50%)'; // 居中显示
+        overlayImage.style.zIndex = '1100'; // 确保叠加图像在前
+
+        // 判断是显示 "o.png" 还是 "x.png"
+        if (judgmentText === '全真音频') {
+            overlayImage.src = 'static/images/o.png';
+        } else {
+            overlayImage.src = 'static/images/x.png';
+        }
+
+        // 将叠加图像添加到容器中
+        judgmentContainer.appendChild(overlayImage);
+        document.body.appendChild(judgmentContainer);
+
+        // 3秒后自动消失并移除
+        setTimeout(() => {
+            document.body.removeChild(judgmentContainer);
+        }, 3000); // 显示3秒后消失
+    }
+
 
     function handleAIFaint() {
         const aiImgElement = document.getElementById('ai-img');
@@ -785,10 +871,10 @@
         message: '點擊這裡播放或暫停音頻。'
     }, {
         elementId: 'player-hp',
-        message: '這是玩家的血量條，隨著點擊按鈕會減少。'
+        message: '這是玩家的血量條，若AI 判斷與實際影片相同則減少。'
     }, {
         elementId: 'ai-hp',
-        message: '這是AI的血量條，隨著點擊按鈕會減少。'
+        message: '這是AI的血量條，若玩家 判斷與實際影片相同則減少。'
     }];
 
     let currentStep = 0;
