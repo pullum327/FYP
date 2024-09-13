@@ -97,8 +97,8 @@
         
         #ai-img {
             background-image: url('static\\images\\pokemon4.png');
-            top: -30px;
-            right: -5%;
+            top: -1%;
+            right: -15%;
             transform: translateX(-50%);
         }
         
@@ -383,7 +383,7 @@
 
     <div class="footer">
         <div class="waveform-card">
-            <p id="associated-text"> {{ text }}</p>
+            <p id="associated-text">{{ text }}</p>
             <div id="waveform" data-audio-path="{{ url_for('static', filename=audio_path) }}"></div>
         </div>
         <div class="controls">
@@ -395,24 +395,24 @@
 </body>
 <script>
     // ---- 全局变量定义 ----
-    var playerHP = 10;
-    var playerATK = 1;
-    var playerMax = 10;
-    var aiHP = 2;
-    var aiMax = 2;
-    var turnGlo = 1;
-    let aiFainted = false;
-    const availableItems = ['increase_hp_max', 'restore_hp', 'increase_attack', 'multi_attack'];
-    let playerItems = [];
-    var modelPrediction = '';
-    var actualType = '';
-    var playerPrediction = '';
+    var playerHP = 10
+    var playerATK = 1
+    var playerMax = 10
+    var aiHP = 2
+    var aiMax = 2
+    var turnGlo = 1
+    let aiFainted = false
+    const availableItems = ['increase_hp_max', 'restore_hp', 'increase_attack', 'multi_attack']
+    let playerItems = []
+    var modelPrediction = ''
+    var actualType = ''
+    var playerPrediction = ''
 
     // ---- 初始化HP条 ----
-    updateHPBar('player-hp', playerHP, playerMax); // Player 的最大血量为 10
-    updateHPBar('ai-hp', aiHP, aiMax); // AI 的最大血量为 2
-    // ---- Predict设置 ----
-    triggerPredict()
+    updateHPBar('player-hp', playerHP, playerMax) // Player 的最大血量为 10
+    updateHPBar('ai-hp', aiHP, aiMax) // AI 的最大血量为 2
+        // ---- Predict设置 ----
+    triggerPredict(audioPath)
 
     // ---- WaveSurfer 音频播放器设置 ----
     var audioPath = "{{ url_for('static', filename=audio_path) }}"
@@ -421,491 +421,496 @@
         waveColor: '#fff',
         progressColor: '#ccc',
         height: 128
-    });
+    })
 
     // 加载音频并在页面加载时自动播放
-    wavesurfer.load(audioPath);
+    wavesurfer.load(audioPath)
     wavesurfer.on('ready', function() {
-        wavesurfer.play();
-        togglePlayPauseIcon();
-        const initialText = document.querySelector('#associated-text').textContent;
+        wavesurfer.play()
+        togglePlayPauseIcon()
+        const initialText = document.querySelector('#associated-text').textContent
         if (initialText) {
-            showTextAnimated(initialText);
+            showTextAnimated(initialText)
         }
-    });
-
+    })
 
     // ---- 事件监听器 ----
-    document.getElementById('audio-icon').addEventListener('click', togglePlayPause);
+    document.getElementById('audio-icon').addEventListener('click', togglePlayPause)
     document.getElementById('btn1').addEventListener('click', function() {
-        playerPrediction = 'r';
-        evaluateGuess(1);
-    });
+        playerPrediction = 'r'
+        evaluateGuess(1)
+    })
     document.getElementById('btn2').addEventListener('click', function() {
-        playerPrediction = 'f';
-        evaluateGuess(1);
-    });
+        playerPrediction = 'f'
+        evaluateGuess(1)
+    })
     document.addEventListener('click', function(event) {
-        createClickEffect(event.pageX, event.pageY);
-    });
+        createClickEffect(event.pageX, event.pageY)
+    })
 
     // ---- 音频播放/暂停功能 ----
     function togglePlayPause() {
         if (wavesurfer.isPlaying()) {
-            wavesurfer.pause();
+            wavesurfer.pause()
         } else {
-            wavesurfer.play();
+            wavesurfer.play()
         }
-        togglePlayPauseIcon();
+        togglePlayPauseIcon()
     }
 
     function togglePlayPauseIcon() {
-        const teamIcon = document.getElementById('audio-icon');
+        const teamIcon = document.getElementById('audio-icon')
         if (wavesurfer.isPlaying()) {
-            teamIcon.style.backgroundImage = "url('static/images/pause-icon.png')";
+            teamIcon.style.backgroundImage = "url('static/images/pause-icon.png')"
         } else {
-            teamIcon.style.backgroundImage = "url('static/images/play-icon.png')";
+            teamIcon.style.backgroundImage = "url('static/images/play-icon.png')"
         }
     }
 
     function playAudio(audioPath) {
-        const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.src = audioPath;
-        audioPlayer.play();
+        const audioPlayer = document.getElementById('audioPlayer')
+        audioPlayer.src = audioPath
+        audioPlayer.play()
     }
 
     // ---- 回合切换及评估 ----
     function updateTurn(turnGlo) {
-        const turnInfo = document.getElementById('turn-info');
-        const turnText = document.getElementById('turn-text');
+        const turnInfo = document.getElementById('turn-info')
+        const turnText = document.getElementById('turn-text')
         if (turnGlo === 1) {
-            turnText.textContent = '玩家回合';
-            disableButtons(false); // 启用按钮，允许玩家操作
+            turnText.textContent = '玩家回合'
+            disableButtons(false) // 启用按钮，允许玩家操作
         } else if (turnGlo === 2) {
-            disableButtons(true); // 禁用按钮，防止玩家操作
-            turnText.textContent = '模型回合';
+            disableButtons(true) // 禁用按钮，防止玩家操作
+            turnText.textContent = '模型回合'
             setTimeout(() => {
-                evaluateGuess(2); // 模拟模型的决策过程
-            }, 4000); // 延时模拟模型计算时间
+                    evaluateGuess(2) // 模拟模型的决策过程
+                }, 4000) // 延时模拟模型计算时间
         }
-        showTurnInfo(turnInfo);
+        showTurnInfo(turnInfo)
     }
 
     async function evaluateGuess(turnGlo) {
-        const btn1 = document.getElementById('btn1');
-        const btn2 = document.getElementById('btn2');
-        const correctAudioPath = btn1.getAttribute('data-audio-path');
-        const wrongAudioPath = btn2.getAttribute('data-audio-path');
-        const heart = "static/audio/heart.wav";
-        const aiImgElement = document.getElementById('ai-img');
-        const aiRect = aiImgElement.getBoundingClientRect();
-        const damageX = aiRect.left + aiRect.width / 2;
-        const damageY = aiRect.top;
-        const playerImgElement = document.getElementById('player-img');
-        const playerRect = playerImgElement.getBoundingClientRect();
-        const damageX2 = playerRect.left + playerRect.width / 2;
-        const damageY2 = playerRect.top;
-
+        const btn1 = document.getElementById('btn1')
+        const btn2 = document.getElementById('btn2')
+        const correctAudioPath = btn1.getAttribute('data-audio-path')
+        const wrongAudioPath = btn2.getAttribute('data-audio-path')
+        const heart = 'static/audio/heart.wav'
+        const aiImgElement = document.getElementById('ai-img')
+        const aiRect = aiImgElement.getBoundingClientRect()
+        const damageX = aiRect.left + aiRect.width / 2
+        const damageY = aiRect.top
+        const playerImgElement = document.getElementById('player-img')
+        const playerRect = playerImgElement.getBoundingClientRect()
+        const damageX2 = playerRect.left + playerRect.width / 2
+        const damageY2 = playerRect.top
 
         if (turnGlo === 1) {
             // 玩家的回合
             if (playerPrediction === actualType) {
-                console.log('Player win');
-                aiHP = Math.max(0, aiHP - playerATK); // 减少 AI 的 HP
-                showDamage(damageX, damageY, playerATK);
-                await playAudio(heart);
-                updateHPBar('ai-hp', aiHP, aiMax);
-                triggerFlickerEffect('ai-img');
+                console.log('Player win')
+                aiHP = Math.max(0, aiHP - playerATK) // 减少 AI 的 HP
+                showDamage(damageX, damageY, playerATK)
+                await playAudio(heart)
+                updateHPBar('ai-hp', aiHP, aiMax)
+                triggerFlickerEffect('ai-img')
 
                 if (playerPrediction === 'r') {
-                    btn1.style.backgroundColor = 'green'; // 正确时btn1变为绿色
-                    await playAudio(correctAudioPath);
+                    btn1.style.backgroundColor = 'green' // 正确时btn1变为绿色
+                    await playAudio(correctAudioPath)
                 } else {
-                    btn2.style.backgroundColor = 'green'; // 正确时btn2变为绿色
-                    await playAudio(correctAudioPath);
+                    btn2.style.backgroundColor = 'green' // 正确时btn2变为绿色
+                    await playAudio(correctAudioPath)
                 }
 
                 // 当AI的血量清0时
                 if (aiHP === 0) {
-                    handleAIFaint(); // 处理AI失败后的逻辑
+                    handleAIFaint() // 处理AI失败后的逻辑
                 }
             } else {
-                console.log('Player wrong');
+                console.log('Player wrong')
                 if (playerPrediction === 'r') {
-                    btn1.style.backgroundColor = 'red'; // 错误时btn1变为红色
-                    await playAudio(wrongAudioPath);
+                    btn1.style.backgroundColor = 'red' // 错误时btn1变为红色
+                    await playAudio(wrongAudioPath)
                 } else {
-                    btn2.style.backgroundColor = 'red'; // 错误时btn2变为红色
-                    await playAudio(wrongAudioPath);
+                    btn2.style.backgroundColor = 'red' // 错误时btn2变为红色
+                    await playAudio(wrongAudioPath)
                 }
             }
 
             setTimeout(() => {
-                btn1.style.backgroundColor = ''; // 2秒后恢复原始颜色
-                btn2.style.backgroundColor = ''; // 2秒后恢复原始颜色
-            }, 2000);
+                btn1.style.backgroundColor = '' // 2秒后恢复原始颜色
+                btn2.style.backgroundColor = '' // 2秒后恢复原始颜色
+            }, 2000)
 
-            turnGlo = 2;
-            updateTurn(turnGlo);
+            turnGlo = 2
+            updateTurn(turnGlo)
         } else if (turnGlo === 2) {
             // 模型的回合
             if (modelPrediction === actualType) {
-                console.log('model win');
-                playerHP = Math.max(0, playerHP - 1); // 减少玩家的 HP
-                showDamage(damageX2, damageY2, 1);
-                playAudio(heart);
-                updateHPBar('player-hp', playerHP, playerMax);
-                triggerFlickerEffect('player-img');
-                showAIJudgment('全真音频');
+                console.log('model win')
+                playerHP = Math.max(0, playerHP - 1) // 减少玩家的 HP
+                showDamage(damageX2, damageY2, 1)
+                playAudio(heart)
+                updateHPBar('player-hp', playerHP, playerMax)
+                triggerFlickerEffect('player-img')
+                showAIJudgment('全真音频')
             } else {
-                console.log('model wrong');
-                showAIJudgment('合成音频');
+                if (modelPrediction == 'nullans') {
+                    console.log('ERROR101')
+                } else {
+                    console.log('model wrong')
+                    showAIJudgment('合成音频')
+                }
             }
 
-            turnGlo = 1;
-            updateTurn(turnGlo); // 更新回合信息并启动玩家的回合
-            startCountdownOrKeyPress();
+            turnGlo = 1
+            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+            loadNextAudio()
         }
     }
 
-    function triggerPredict() {
+    function triggerPredict(audioPath) {
         fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify() // 这里的 body 需要根据后端期待的数据格式来调整
+                body: JSON.stringify({
+                    audio_path: audioPath
+                })
             })
-            .then((response) => response.json())
-            .then((data) => {
+            .then(response => response.json())
+            .then(data => {
                 console.log('Prediction:', data.aiprediction);
                 console.log('Actual:', data.audiotype);
-                updatePredictions(data.aiprediction, data.audiotype);
+                console.log('PATH:', data.audio_path);
+                // 其他需要执行的代码
+                updatePredictions(data.aiprediction, data.audiotype)
             })
-            .catch((error) => console.error('Error predicting audio:', error));
+            .catch(error => console.error('Error predicting audio:', error));
     }
+
 
     // ---- HP条和震动效果 ----
     function updateHPBar(hpElementId, currentHP, maxHP) {
-        const hpElement = document.getElementById(hpElementId);
-        const hpPercentage = (currentHP / maxHP) * 100;
-        hpElement.style.width = hpPercentage + '%'; // 根据百分比调整宽度
-        hpElement.textContent = currentHP + ' HP'; // 显示当前的 HP
+        const hpElement = document.getElementById(hpElementId)
+        const hpPercentage = (currentHP / maxHP) * 100
+        hpElement.style.width = hpPercentage + '%' // 根据百分比调整宽度
+        hpElement.textContent = currentHP + ' HP' // 显示当前的 HP
 
         // 判断HP是否为0，如果为0则更换图片
         if (currentHP === 0) {
             if (hpElementId === 'player-hp') {
-                document.getElementById('player-img').style.backgroundImage = "url('static/images/pokemon1_fainted.png')";
+                document.getElementById('player-img').style.backgroundImage = "url('static/images/pokemon1_fainted.png')"
             } else if (hpElementId === 'ai-hp') {
-                document.getElementById('ai-img').style.backgroundImage = "url('static/images/pokemon4_fainted.png')";
+                document.getElementById('ai-img').style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
             }
         }
     }
 
     function triggerFlickerEffect(elementId) {
-        const element = document.getElementById(elementId);
-        element.classList.add('shake-opacity');
+        const element = document.getElementById(elementId)
+        element.classList.add('shake-opacity')
         setTimeout(() => {
-            element.classList.remove('shake-opacity');
-        }, 1000); // Duration matches the flicker animation
+                element.classList.remove('shake-opacity')
+            }, 1000) // Duration matches the flicker animation
     }
 
     // ---- 模型预测及回合更新 ----
     function updatePredictions(prediction, actual) {
-        modelPrediction = prediction;
-        actualType = actual;
+        modelPrediction = prediction
+        actualType = actual
     }
     // ---- AI预测anime ----
     function showAIJudgment(judgmentText) {
-        const judgmentContainer = document.createElement('div');
-        judgmentContainer.style.position = 'fixed';
-        judgmentContainer.style.top = '20%';
-        judgmentContainer.style.right = '18%';
-        judgmentContainer.style.transform = 'translate(-50%, -50%)'; // 居中显示
-        judgmentContainer.style.zIndex = '1000'; // 保证在最前面显示
-        judgmentContainer.style.width = '200px'; // 根据需求调整大小
-        judgmentContainer.style.height = '200px';
-        judgmentContainer.style.backgroundImage = "url('static/images/b.png')";
-        judgmentContainer.style.backgroundSize = 'contain';
-        judgmentContainer.style.backgroundRepeat = 'no-repeat';
-        judgmentContainer.style.backgroundPosition = 'center';
+        const judgmentContainer = document.createElement('div')
+        judgmentContainer.style.position = 'fixed'
+        judgmentContainer.style.top = '20%'
+        judgmentContainer.style.right = '18%'
+        judgmentContainer.style.transform = 'translate(-50%, -50%)' // 居中显示
+        judgmentContainer.style.zIndex = '1000' // 保证在最前面显示
+        judgmentContainer.style.width = '200px' // 根据需求调整大小
+        judgmentContainer.style.height = '200px'
+        judgmentContainer.style.backgroundImage = "url('static/images/b.png')"
+        judgmentContainer.style.backgroundSize = 'contain'
+        judgmentContainer.style.backgroundRepeat = 'no-repeat'
+        judgmentContainer.style.backgroundPosition = 'center'
 
         // 添加判断结果的图像
-        const overlayImage = document.createElement('img');
-        overlayImage.style.position = 'absolute';
-        overlayImage.style.width = '80px'; // 可以根据需求调整大小
-        overlayImage.style.height = '80px';
-        overlayImage.style.top = '40%';
-        overlayImage.style.right = '11%';
-        overlayImage.style.transform = 'translate(-50%, -50%)'; // 居中显示
-        overlayImage.style.zIndex = '1100'; // 确保叠加图像在前
+        const overlayImage = document.createElement('img')
+        overlayImage.style.position = 'absolute'
+        overlayImage.style.width = '80px' // 可以根据需求调整大小
+        overlayImage.style.height = '80px'
+        overlayImage.style.top = '40%'
+        overlayImage.style.right = '11%'
+        overlayImage.style.transform = 'translate(-50%, -50%)' // 居中显示
+        overlayImage.style.zIndex = '1100' // 确保叠加图像在前
 
         // 判断是显示 "o.png" 还是 "x.png"
         if (judgmentText === '全真音频') {
-            overlayImage.src = 'static/images/o.png';
+            overlayImage.src = 'static/images/o.png'
         } else {
-            overlayImage.src = 'static/images/x.png';
+            overlayImage.src = 'static/images/x.png'
         }
 
         // 将叠加图像添加到容器中
-        judgmentContainer.appendChild(overlayImage);
-        document.body.appendChild(judgmentContainer);
+        judgmentContainer.appendChild(overlayImage)
+        document.body.appendChild(judgmentContainer)
 
         // 3秒后自动消失并移除
         setTimeout(() => {
-            document.body.removeChild(judgmentContainer);
-        }, 3000); // 显示3秒后消失
+                document.body.removeChild(judgmentContainer)
+            }, 3000) // 显示3秒后消失
     }
 
-
     function handleAIFaint() {
-        const aiImgElement = document.getElementById('ai-img');
-        const currentBackgroundImage = aiImgElement.style.backgroundImage;
+        const aiImgElement = document.getElementById('ai-img')
+        const currentBackgroundImage = aiImgElement.style.backgroundImage
 
         // 根据当前图片路径选择相应的fainted图像
         if (currentBackgroundImage.includes('pokemon2.png')) {
-            aiImgElement.style.backgroundImage = "url('static/images/pokemon2_fainted.png')";
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon2_fainted.png')"
         } else if (currentBackgroundImage.includes('pokemon3.png')) {
-            aiImgElement.style.backgroundImage = "url('static/images/pokemon3_fainted.png')";
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon3_fainted.png')"
         } else if (currentBackgroundImage.includes('pokemon4.png')) {
-            aiImgElement.style.backgroundImage = "url('static/images/pokemon4_fainted.png')";
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
         }
 
-        aiFainted = true; // 标记AI已经失败
+        aiFainted = true // 标记AI已经失败
 
-        if (playerItems.length < 4) { // 如果玩家的道具数量少于4个，显示卡片选择框
-            showCardSelection();
+        if (playerItems.length < 4) {
+            // 如果玩家的道具数量少于4个，显示卡片选择框
+            showCardSelection()
         }
     }
 
     function handleAINewPokemon() {
-        const newPokemon = Math.floor(Math.random() * 3) + 2; // 随机选择2到4之间的整数
-        const newImageUrl = `static/images/pokemon${newPokemon}.png`;
-        document.getElementById('ai-img').style.backgroundImage = `url('${newImageUrl}')`;
+        const newPokemon = Math.floor(Math.random() * 3) + 2 // 随机选择2到4之间的整数
+        const newImageUrl = `static/images/pokemon${newPokemon}.png`
+        document.getElementById('ai-img').style.backgroundImage = `url('${newImageUrl}')`
 
         // 增加AI的最大HP并重置当前HP
-        aiMax += 2; // 增加AI的最大HP
-        aiHP = aiMax;
-        updateHPBar('ai-hp', aiHP, aiMax);
+        aiMax += 2 // 增加AI的最大HP
+        aiHP = aiMax
+        updateHPBar('ai-hp', aiHP, aiMax)
 
-        console.log(`AI has a new Pokemon with max HP: ${aiMax}`);
+        console.log(`AI has a new Pokemon with max HP: ${aiMax}`)
     }
 
     // ---- 倒计时及下一个音频加载 ----
     function startCountdownOrKeyPress() {
-        let countdown = 20; // 20秒倒计时
-        const countdownElement = document.createElement('div');
-        countdownElement.style.position = 'fixed';
-        countdownElement.style.bottom = '10px';
-        countdownElement.style.right = '10px';
-        countdownElement.style.fontSize = '24px';
-        countdownElement.style.color = 'white';
-        document.body.appendChild(countdownElement);
+        let countdown = 20 // 20秒倒计时
+        const countdownElement = document.createElement('div')
+        countdownElement.style.position = 'fixed'
+        countdownElement.style.bottom = '10px'
+        countdownElement.style.right = '10px'
+        countdownElement.style.fontSize = '24px'
+        countdownElement.style.color = 'white'
+        document.body.appendChild(countdownElement)
 
         const intervalId = setInterval(() => {
-            countdownElement.textContent = `Next audio in ${countdown--}s...`;
+            countdownElement.textContent = `Next audio in ${countdown--}s...`
             if (countdown < 0) {
-                clearInterval(intervalId);
-                document.body.removeChild(countdownElement);
-                loadNextAudio(); // 倒计时结束后加载新音频
+                clearInterval(intervalId)
+                document.body.removeChild(countdownElement)
+
             }
-        }, 1000);
+        }, 1000)
 
         // 监听按键或鼠标点击中断倒计时
         function interruptCountdown() {
-            clearInterval(intervalId);
-            document.body.removeChild(countdownElement);
-            loadNextAudio(); // 中断后加载新音频
+            clearInterval(intervalId)
+            document.body.removeChild(countdownElement)
 
-            document.removeEventListener('keydown', interruptCountdown);
-            document.removeEventListener('mousedown', interruptCountdown);
+
+            document.removeEventListener('keydown', interruptCountdown)
+            document.removeEventListener('mousedown', interruptCountdown)
         }
 
         document.addEventListener('keydown', interruptCountdown, {
             once: true
-        });
+        })
         document.addEventListener('mousedown', interruptCountdown, {
             once: true
-        });
+        })
     }
 
     function loadNextAudio() {
         fetch('/game') // 重新请求 /game 以获取新音频路径和对应文字
-            .then(response => response.text())
-            .then(html => {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(html, 'text/html');
+            .then((response) => response.text())
+            .then((html) => {
+                var parser = new DOMParser()
+                var doc = parser.parseFromString(html, 'text/html')
 
-                var newAudioPath = doc.querySelector('#waveform').getAttribute('data-audio-path');
-                var newText = doc.querySelector('#associated-text').textContent;
+                var newAudioPath = doc.querySelector('#waveform').getAttribute('data-audio-path')
+                var newText = doc.querySelector('#associated-text').textContent
 
-                if (newAudioPath && newAudioPath !== "null") {
-                    wavesurfer.load(newAudioPath);
+                if (newAudioPath && newAudioPath !== 'null') {
+                    triggerPredict(newAudioPath)
+                    wavesurfer.load(newAudioPath)
                     wavesurfer.on('ready', function() {
-                        wavesurfer.play(); // 自动播放新加载的音频
-                        togglePlayPauseIcon();
-                        showTextAnimated(newText);
+                        wavesurfer.play() // 自动播放新加载的音频
+                        togglePlayPauseIcon()
+                        showTextAnimated(newText)
 
                         if (aiFainted) {
-                            handleAINewPokemon();
-                            aiFainted = false; // 重置标志
+                            handleAINewPokemon()
+                            aiFainted = false // 重置标志
                         }
-                    });
+                    })
                 } else {
-                    console.error("Failed to load new audio path. Path is null or undefined.");
+                    console.error('Failed to load new audio path. Path is null or undefined.')
                 }
             })
-            .catch(error => console.error('Error loading next audio:', error));
+            .catch((error) => console.error('Error loading next audio:', error))
     }
 
     // ---- 卡片选择及道具效果 ----
     function showCardSelection() {
-        const cardSelection = document.getElementById('card-selection');
-        const selectedItems = getRandomItems(availableItems, 3);
+        const cardSelection = document.getElementById('card-selection')
+        const selectedItems = getRandomItems(availableItems, 3)
 
-        document.getElementById('card1').textContent = getItemDisplayName(selectedItems[0]);
-        document.getElementById('card1').setAttribute('onclick', `selectCard('${selectedItems[0]}')`);
+        document.getElementById('card1').textContent = getItemDisplayName(selectedItems[0])
+        document.getElementById('card1').setAttribute('onclick', `selectCard('${selectedItems[0]}')`)
 
-        document.getElementById('card2').textContent = getItemDisplayName(selectedItems[1]);
-        document.getElementById('card2').setAttribute('onclick', `selectCard('${selectedItems[1]}')`);
+        document.getElementById('card2').textContent = getItemDisplayName(selectedItems[1])
+        document.getElementById('card2').setAttribute('onclick', `selectCard('${selectedItems[1]}')`)
 
-        document.getElementById('card3').textContent = getItemDisplayName(selectedItems[2]);
-        document.getElementById('card3').setAttribute('onclick', `selectCard('${selectedItems[2]}')`);
+        document.getElementById('card3').textContent = getItemDisplayName(selectedItems[2])
+        document.getElementById('card3').setAttribute('onclick', `selectCard('${selectedItems[2]}')`)
 
-        cardSelection.classList.remove('hidden');
+        cardSelection.classList.remove('hidden')
     }
 
     function getRandomItems(array, num) {
-        const result = [];
-        const clonedArray = [...array];
+        const result = []
+        const clonedArray = [...array]
         for (let i = 0; i < num; i++) {
-            const randomIndex = Math.floor(Math.random() * clonedArray.length);
-            result.push(clonedArray[randomIndex]);
-            clonedArray.splice(randomIndex, 1); // 移除已选择的项目，防止重复
+            const randomIndex = Math.floor(Math.random() * clonedArray.length)
+            result.push(clonedArray[randomIndex])
+            clonedArray.splice(randomIndex, 1) // 移除已选择的项目，防止重复
         }
-        return result;
+        return result
     }
 
     function getItemDisplayName(item) {
         switch (item) {
             case 'increase_hp_max':
-                return '增加最大 HP';
+                return '增加最大 HP'
             case 'restore_hp':
-                return '回復 HP';
+                return '回復 HP'
             case 'increase_attack':
-                return '增加攻擊力';
+                return '增加攻擊力'
             case 'multi_attack':
-                return '連擊攻擊';
+                return '連擊攻擊'
             default:
-                return '';
+                return ''
         }
     }
 
     function selectCard(item) {
         if (playerItems.length < 4) {
-            playerItems.push(item);
-            applyItemEffect(item);
+            playerItems.push(item)
+            applyItemEffect(item)
         }
 
-        const cardSelection = document.getElementById('card-selection');
-        cardSelection.classList.add('hidden');
-
-        loadNextAudio();
+        const cardSelection = document.getElementById('card-selection')
+        cardSelection.classList.add('hidden')
     }
 
     function applyItemEffect(item) {
         switch (item) {
             case 'increase_hp_max':
-                playerMax += 2; // 增加最大 HP
-                break;
+                playerMax += 2 // 增加最大 HP
+                break
             case 'restore_hp':
-                playerHP = Math.min(playerMax, playerHP + 5); // 恢复 5 HP
-                break;
+                playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
+                break
             case 'increase_attack':
-                playerATK += 1; // 增加攻击力
-                break;
+                playerATK += 1 // 增加攻击力
+                break
             case 'multi_attack':
                 // 设置连击攻击效果的逻辑
-                break;
+                break
         }
-        updateHPBar('player-hp', playerHP, playerMax); // 更新血条
+        updateHPBar('player-hp', playerHP, playerMax) // 更新血条
     }
 
     // ---- 文本显示动画 ----
     function showTextAnimated(text) {
-        const container = document.getElementById('associated-text');
-        container.innerHTML = ''; // 清空之前的文字
+        const container = document.getElementById('associated-text')
+        container.innerHTML = '' // 清空之前的文字
         for (let i = 0; i < text.length; i++) {
-            const span = document.createElement('span');
-            span.textContent = text[i];
-            span.className = 'letter';
-            container.appendChild(span);
+            const span = document.createElement('span')
+            span.textContent = text[i]
+            span.className = 'letter'
+            container.appendChild(span)
         }
 
-        const letters = container.querySelectorAll('.letter');
+        const letters = container.querySelectorAll('.letter')
         letters.forEach((letter, index) => {
             setTimeout(() => {
-                letter.style.opacity = 1;
-            }, index * 100); // 每个字母的显示间隔为100毫秒
-        });
+                    letter.style.opacity = 1
+                }, index * 100) // 每个字母的显示间隔为100毫秒
+        })
     }
     // ---- 傷害數字显示动画 ----
     function showDamage(x, y, damage) {
-        const damageElement = document.createElement('div');
-        damageElement.className = 'damage-number';
-        damageElement.style.left = `${x}px`;
-        damageElement.style.top = `${y}px`;
-        damageElement.textContent = `-${damage}`;
+        const damageElement = document.createElement('div')
+        damageElement.className = 'damage-number'
+        damageElement.style.left = `${x}px`
+        damageElement.style.top = `${y}px`
+        damageElement.textContent = `-${damage}`
 
-        document.body.appendChild(damageElement);
+        document.body.appendChild(damageElement)
 
         // 在動畫結束後刪除這個元素
         damageElement.addEventListener('animationend', () => {
-            document.body.removeChild(damageElement);
-        });
+            document.body.removeChild(damageElement)
+        })
     }
-
 
     // ---- 视觉效果 ----
     function createClickEffect(x, y) {
-        var effect = document.createElement('div');
-        effect.className = 'clickEffect';
-        document.body.appendChild(effect);
+        var effect = document.createElement('div')
+        effect.className = 'clickEffect'
+        document.body.appendChild(effect)
 
-        effect.style.left = x - 20 + 'px';
-        effect.style.top = y - 20 + 'px';
+        effect.style.left = x - 20 + 'px'
+        effect.style.top = y - 20 + 'px'
 
-        var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)';
-        effect.style.borderColor = randomColor;
+        var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)'
+        effect.style.borderColor = randomColor
 
         effect.addEventListener('animationend', function() {
-            document.body.removeChild(effect);
-        });
+            document.body.removeChild(effect)
+        })
     }
 
-    var style = document.createElement('style');
+    var style = document.createElement('style')
     style.textContent = `
-                    .clickEffect {
-                        position: absolute;
-                        width: 65px;
-                        height: 65px;
-                        border: 1px solid transparent;
-                        border-radius: 50%;
-                        animation: clickEffectAnimation 0.5s ease-out;
-                        pointer-events: none;
-                        box-sizing: border-box;
-                    }
-                    @keyframes clickEffectAnimation {
-                        0% {
-                            transform: scale(0);
-                            opacity: 1;
-                        }
-                        100% {
-                            transform: scale(1.5);
-                            opacity: 0;
-                        }
-                    }`;
-    document.head.appendChild(style);
+                            .clickEffect {
+                                position: absolute;
+                                width: 65px;
+                                height: 65px;
+                                border: 1px solid transparent;
+                                border-radius: 50%;
+                                animation: clickEffectAnimation 0.5s ease-out;
+                                pointer-events: none;
+                                box-sizing: border-box;
+                            }
+                            @keyframes clickEffectAnimation {
+                                0% {
+                                    transform: scale(0);
+                                    opacity: 1;
+                                }
+                                100% {
+                                    transform: scale(1.5);
+                                    opacity: 0;
+                                }
+                            }`
+    document.head.appendChild(style)
 
     // ---- 引导功能 ----
     const guideSteps = [{
@@ -923,88 +928,91 @@
     }, {
         elementId: 'ai-hp',
         message: '這是AI的血量條，若玩家 判斷與實際影片相同則減少。'
-    }];
+    }]
 
-    let currentStep = 0;
+    let currentStep = 0
 
-    const guideOverlay = document.createElement('div');
-    guideOverlay.style.position = 'fixed';
-    guideOverlay.style.top = 0;
-    guideOverlay.style.left = 0;
-    guideOverlay.style.width = '100%';
-    guideOverlay.style.height = '100%';
-    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    guideOverlay.style.zIndex = 1000;
-    guideOverlay.style.display = 'flex';
-    guideOverlay.style.justifyContent = 'center';
-    guideOverlay.style.alignItems = 'center';
-    guideOverlay.style.color = '#fff';
-    guideOverlay.style.textAlign = 'center';
-    guideOverlay.style.padding = '20px';
-    guideOverlay.style.cursor = 'pointer';
-    document.body.appendChild(guideOverlay);
+    const guideOverlay = document.createElement('div')
+    guideOverlay.style.position = 'fixed'
+    guideOverlay.style.top = 0
+    guideOverlay.style.left = 0
+    guideOverlay.style.width = '100%'
+    guideOverlay.style.height = '100%'
+    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+    guideOverlay.style.zIndex = 1000
+    guideOverlay.style.display = 'flex'
+    guideOverlay.style.justifyContent = 'center'
+    guideOverlay.style.alignItems = 'center'
+    guideOverlay.style.color = '#fff'
+    guideOverlay.style.textAlign = 'center'
+    guideOverlay.style.padding = '20px'
+    guideOverlay.style.cursor = 'pointer'
+    document.body.appendChild(guideOverlay)
 
-    const guideText = document.createElement('div');
-    guideText.style.maxWidth = '600px';
-    guideText.style.fontSize = '24px';
-    guideOverlay.appendChild(guideText);
+    const guideText = document.createElement('div')
+    guideText.style.maxWidth = '600px'
+    guideText.style.fontSize = '24px'
+    guideOverlay.appendChild(guideText)
 
     function showGuideStep(step) {
         const {
             elementId,
             message
-        } = guideSteps[step];
-        const element = document.getElementById(elementId);
+        } = guideSteps[step]
+        const element = document.getElementById(elementId)
 
-        element.style.zIndex = 1001;
-        element.style.position = 'relative';
-        element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
+        element.style.zIndex = 1001
+        element.style.position = 'relative'
+        element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)'
 
-        guideText.textContent = message;
+        guideText.textContent = message
 
         guideOverlay.onclick = () => {
-            element.style.zIndex = '';
-            element.style.boxShadow = '';
-            currentStep++;
+            element.style.zIndex = ''
+            element.style.boxShadow = ''
+            currentStep++
             if (currentStep < guideSteps.length) {
-                showGuideStep(currentStep);
+                showGuideStep(currentStep)
             } else {
-                endGuide();
+                endGuide()
             }
-        };
+        }
     }
 
     function endGuide() {
-        document.body.removeChild(guideOverlay);
+        document.body.removeChild(guideOverlay)
     }
 
-    showGuideStep(currentStep);
+    showGuideStep(currentStep)
 
     // ---- 辅助函数 ----
     function showTurnInfo(turnInfo) {
-        turnInfo.classList.add('show');
+        turnInfo.classList.add('show')
         setTimeout(() => {
-            turnInfo.classList.remove('show');
-        }, 3000);
-        turnInfo.style.display = 'block';
-        turnInfo.style.animation = 'none';
+            turnInfo.classList.remove('show')
+        }, 3000)
+        turnInfo.style.display = 'block'
+        turnInfo.style.animation = 'none'
 
-        void turnInfo.offsetWidth; // 强制重排来重置动画
+        void turnInfo.offsetWidth // 强制重排来重置动画
 
-        turnInfo.style.animation = 'slide-right-to-left 3s forwards';
+        turnInfo.style.animation = 'slide-right-to-left 3s forwards'
 
-        turnInfo.addEventListener('animationend', () => {
-            turnInfo.style.display = 'none';
-        }, {
-            once: true
-        });
+        turnInfo.addEventListener(
+            'animationend',
+            () => {
+                turnInfo.style.display = 'none'
+            }, {
+                once: true
+            }
+        )
     }
 
     function disableButtons(disable) {
-        const buttons = document.querySelectorAll('.btnclass');
+        const buttons = document.querySelectorAll('.btnclass')
         buttons.forEach((button) => {
-            button.disabled = disable;
-        });
+            button.disabled = disable
+        })
     }
 </script>
 
