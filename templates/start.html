@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Deepfake - 开始游戏</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com');
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            /* 让标题和按钮垂直排列 */
+            height: 100vh;
+            background-image: url('static\\images\\bg1.png');
+            color: #fff;
+            text-align: center;
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border: 5px solid #fff;
+            border-radius: 10px;
+            margin-top: 20px;
+            /* 添加间距，避免标题和按钮贴在一起 */
+        }
+        
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .play-game-button {
+            font-size: 16px;
+            padding: 10px 20px;
+            border: 2px solid #fff;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .play-game-button:hover {
+            background: #fff;
+            color: #000;
+        }
+        
+        .bubble-text {
+            font-size: clamp(3rem, calc(3rem + 5.5vw), 8rem);
+            color: hsl(0, 33%, 99%);
+            user-select: none;
+            margin-bottom: 20px;
+            /* 可根据需要调整 */
+            margin-top: -10%;
+            /* 将标题往上移动，值可以根据需要调整 */
+            font-weight: bold;
+            text-shadow: 0 0 10px white;
+        }
+        
+        .bubble-text.split-text {
+            display: inline-flex;
+        }
+        
+        .bubble-text .split-char {
+            font-weight: 200;
+            transition: font-weight 0.5s ease;
+        }
+        
+        .bubble-text .split-char:hover {
+            font-weight: var(--_fw-900);
+            color: var(--_clr-900);
+        }
+        /* // right side */
+        
+        .bubble-text .split-char:hover+.split-char {
+            font-weight: var(--_fw-700);
+            color: var(--_clr-700);
+        }
+        
+        .bubble-text .split-char:hover+.split-char+.split-char {
+            font-weight: var(--_fw-400);
+            color: var(--_clr-400);
+        }
+        /* // left side */
+        
+        .bubble-text .split-char:has(+.split-char:hover) {
+            font-weight: var(--_fw-700);
+            color: var(--_clr-700);
+        }
+        
+        .bubble-text .split-char:has(+.split-char+.split-char:hover) {
+            font-weight: var(--_fw-400);
+            color: var(--_clr-400);
+        }
+        
+        @keyframes slide-in-top {
+            0% {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 class="bubble-text text">AudioDeepFake</h2>
+    <div class="container">
+        <button id="play-game-button" class="play-game-button" onclick="startGame()">開始遊戲</button>
+    </div>
+
+    <script>
+        function splitTextIntoSpans(target) {
+            let elements = document.querySelectorAll(target);
+            elements.forEach((element) => {
+                element.classList.add('split-text');
+                let text = element.innerText;
+                let splitText = text
+                    .split(" ")
+                    .map(function(word) {
+                        let char = word.split('').map(char => {
+                            return `<span class="split-char">${char}</span>`;
+                        }).join('');
+                        return `<div class="split-word">${char}&nbsp</div>`;
+                    }).join('');
+
+                element.innerHTML = splitText;
+            });
+        }
+        splitTextIntoSpans('.bubble-text');
+
+        function startGame() {
+            console.log('Button clicked'); // 检查点击是否触发
+            window.open('/start2', '_blank'); // 直接在点击按钮时打开新页面
+        }
+    </script>
+</body>
+
+</html>
