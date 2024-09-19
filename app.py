@@ -29,8 +29,10 @@ load_checkpoint(model, checkpoint_path)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
-
+    return render_template('start.html')
+@app.route('/start2')
+def start2():
+    return render_template('start2.html')
 current_index = 0
 
 # 修改get_audio_path函数，增加返回对应文字
@@ -39,7 +41,7 @@ def get_audio_path():
     global current_index
     global audiopathrn
     global audiotypenow
-    
+    global aipretglo
     # 定义文件夹和文件名的模板
     folder_options = ["T1", "F1"]
     file_template = "{folder}_{index}.wav"
@@ -84,7 +86,7 @@ def game():
     return render_template('game2.html', audio_path=audio_path, text=associated_text)
 
 
-def predict_full_audio(audio_path):
+def predict_full_audio(audio_path): #AI predict
     waveform, sample_rate = librosa.load(audio_path, sr=16000)  
     total_samples = waveform.shape[0]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -95,18 +97,15 @@ def predict_full_audio(audio_path):
         outputs = model(**inputs)
     pred_label = torch.argmax(outputs.logits, dim=-1)
     predicted_description = "f" if pred_label.item() == 0 else "r"
+    print("MYANSNOW: ", predicted_description, "IN", audio_path)
     return predicted_description
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    aiprediction = "nullans"
     aiprediction = predict_full_audio(audiopathrn)
     audiotype=audiotypenow
-    return jsonify({'aiprediction': aiprediction, 'audiotype': audiotype})
-
-@app.route('/takeans', methods=['POST'])
-def takeans():
-    audiotype=audiotypenow
-    return jsonify({'audiotype': audiotype}) 
+    return jsonify({'aiprediction': aiprediction, 'audiotype': audiotype, 'audio_path': audiopathrn})
 
 def load_t1_text(file_path):
     text_dict = {}
