@@ -81,10 +81,12 @@
         }
         
         .battle-area {
+            overflow: visible;
             flex: 1;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
             /* 垂直居中 */
             padding: 20px;
             background-color: #222;
@@ -107,7 +109,7 @@
             width: 350px;
             background-size: contain;
             background-repeat: no-repeat;
-            /* position: absolute; */
+            position: relative;
             /* 移除 */
             z-index: 10;
             /* 移除 top、left、right、transform 等属性 */
@@ -125,7 +127,7 @@
         }
         
         #ai-img {
-            background-image: url('static\\images\\ai.png');
+            background-image: url('static\\images\\pokemon4.png');
             /* 移除 top, right, transform 属性 */
         }
         
@@ -157,7 +159,79 @@
                 opacity: 1;
             }
         }
-        /* 创建旋转的三角形箭头 */
+        /* 玩家攻击动画 */
+        
+        @keyframes player-attack-animation {
+            0% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            10% {
+                transform: translateX(0) rotate(-45deg);
+                opacity: 1;
+            }
+            40% {
+                transform: translateX(100vw) rotate(-45deg);
+                opacity: 1;
+            }
+            40.01% {
+                transform: translateX(-100vw) rotate(-45deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translateX(0) rotate(-45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+        
+        #player-img.attack-animation {
+            animation: player-attack-animation 1.5s forwards linear;
+        }
+        /* AI 攻击动画 */
+        
+        @keyframes ai-attack-animation {
+            0% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            10% {
+                transform: translateX(0) rotate(45deg);
+                opacity: 1;
+            }
+            40% {
+                transform: translateX(-100vw) rotate(45deg);
+                opacity: 1;
+            }
+            40.01% {
+                transform: translateX(100vw) rotate(45deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translateX(0) rotate(45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+        
+        #ai-img.attack-animation {
+            animation: ai-attack-animation 1.5s forwards linear;
+        }
+        /* 应用于玩家图片的攻击动画类 */
+        
+        #player-img.attack-animation {
+            animation: player-attack-animation 1s forwards;
+        }
+        
+        #ai-img.attack-animation {
+            animation: ai-attack-animation 1s forwards;
+        }
         
         #t-img {
             position: absolute;
@@ -256,15 +330,6 @@
         
         .shake-opacity {
             animation: flicker 0.2s alternate 5;
-        }
-        
-        @keyframes flicker {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
         }
         
         #audio-icon {
@@ -404,6 +469,38 @@
             opacity: 1;
         }
         
+        .tooltip-panel {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            /* 将面板定位在图片的右侧 */
+            transform: translateY(-50%);
+            /* 垂直居中 */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: left;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .tooltip-panel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            /* 将小三角定位在面板的左侧 */
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
         .damage-number {
             position: absolute;
             color: #ff0000;
@@ -432,11 +529,7 @@
         }
         
         .battle-log {
-            position: fixed;
-            top: 10%;
-            /* 调整这个值来设置位置 */
-            left: 50%;
-            transform: translateX(-50%);
+            position: relative;
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 10px 20px;
@@ -445,14 +538,13 @@
             font-size: 18px;
             text-align: left;
             z-index: 1000;
-            height: 150px;
-            /* 固定高度 */
-            width: 300px;
-            /* 固定宽度 */
+            height: 50px;
+            width: 100%;
+            /* 设置为100% */
             overflow-y: auto;
-            /* 启用垂直滚动条 */
             max-height: 200px;
-            /* 最大高度，防止占据太多空间 */
+            margin-bottom: 10px;
+            /* 与其他内容的间距 */
         }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
@@ -469,7 +561,6 @@
     </div>
     <div class="main-content">
         <div class="battle-area">
-            <!-- <div id="battle-log" class="battle-log"></div> -->
             <div class="player">
                 <div id="player-arrow" class="turn-arrow"></div>
                 <div class="hp-bar">
@@ -479,6 +570,18 @@
                 <div class="shake-little">
                     <div id="player-img"></div>
                     <div id="t-img"></div>
+                </div>
+
+                <div id="player-tooltip" class="tooltip-panel hidden">
+                    <p>
+                        血量: <span id="player-health-value">10</span>/<span id="player-max-health">10</span>
+                    </p>
+                    <p>
+                        攻擊力: <span id="player-attack-value">1</span>
+                    </p>
+                    <p>
+                        連擊攻擊 X<span id="player-multi-attack-value">1</span>
+                    </p>
                 </div>
             </div>
             <div class="ai">
@@ -501,6 +604,7 @@
             </div>
         </div>
     </div>
+    <div id="battle-log" class="battle-log"></div>
     <div class="footer">
         <div class="waveform-card">
             <p id="associated-text">{{ text }}</p>
@@ -516,10 +620,12 @@
 </body>
 <script>
     // ---- 全局变量定义 ----
+    var multiatknum = 1
     var playerHP = 10
     var playerATK = 1
     var playerMax = 10
     var aiHP = 2
+    var aiATK = 1
     let gameover = false
     var aiMax = 2
     var turnGlo = 1
@@ -529,10 +635,53 @@
     var modelPrediction = ''
     var actualType = ''
     var playerPrediction = ''
+    let judge = false
+        // 定义玩家和 AI 的位置
+    var playerPosition = {
+        x: 0,
+        y: 100
+    }
+    var aiPosition = {
+        x: 60,
+        y: 70
+    }
+
+    // 获取元素的引用
+    const playerImg = document.getElementById('player-img')
+    const playerTooltip = document.getElementById('player-tooltip')
+    const playerAttackValue = document.getElementById('player-attack-value')
+    const playerHealthValue = document.getElementById('player-health-value')
+    const playerMaxHealth = document.getElementById('player-max-health')
+    const playerMultiAttackValue = document.getElementById('player-multi-attack-value')
+        // 更新面板中的数值
+    function updatePlayerTooltip() {
+        playerAttackValue.textContent = playerATK
+        playerHealthValue.textContent = playerHP
+        playerMaxHealth.textContent = playerMax
+        playerMultiAttackValue.textContent = multiatknum
+    }
+
+    // 初次调用，确保数值正确
+    updatePlayerTooltip()
+
+    // 当玩家的攻击力或血量发生变化时，调用此函数
+    // 例如，在你的 `applyItemEffect` 函数和其他修改 `playerATK`、`playerHP`、`playerMax` 的地方调用
+
+    // 鼠标进入时显示面板
+    playerImg.addEventListener('mouseenter', function() {
+        updatePlayerTooltip() // 确保数值是最新的
+        playerTooltip.classList.remove('hidden')
+    })
+
+    // 鼠标移出时隐藏面板
+    playerImg.addEventListener('mouseleave', function() {
+        playerTooltip.classList.add('hidden')
+    })
 
     // ---- 初始化HP条 ----
     updateHPBar('player-hp', playerHP, playerMax) // Player 的最大血量为 10
     updateHPBar('ai-hp', aiHP, aiMax) // AI 的最大血量为 2
+    updatePositions()
         // ---- Predict设置 ----
     triggerPredict(audioPath)
 
@@ -561,12 +710,12 @@
     document.getElementById('btn1').addEventListener('click', function() {
         playerPrediction = 'r'
         evaluateGuess(1)
-        hideTImage();
+        hideTImage()
     })
     document.getElementById('btn2').addEventListener('click', function() {
         playerPrediction = 'f'
         evaluateGuess(1)
-        hideTImage();
+        hideTImage()
     })
     document.addEventListener('click', function(event) {
         createClickEffect(event.pageX, event.pageY)
@@ -604,7 +753,7 @@
         if (turnGlo === 1 && !gameover) {
             turnText.textContent = '玩家回合'
             disableButtons(false) // 启用按钮，允许玩家操作
-            showTImage();
+            showTImage()
         } else if (turnGlo === 2) {
             disableButtons(true) // 禁用按钮，防止玩家操作
             turnText.textContent = '模型回合'
@@ -635,14 +784,19 @@
         if (turnGlo === 1) {
             // 玩家的回合
             if (playerPrediction === actualType) {
+                judge = true;
+                updateBattleLogjudge(judge, '玩家');
+                updateBattleLog('玩家', playerATK * multiatknum, 'AI');
+
                 console.log('Player win')
-                aiHP = Math.max(0, aiHP - playerATK) // 减少 AI 的 HP
-                showDamage(damageX, damageY, playerATK)
+                attackEffect(1)
+                aiHP = Math.max(0, aiHP - playerATK * multiatknum) // 减少 AI 的 HP
+                showDamage(damageX, damageY, playerATK * multiatknum)
                 await playAudio(heart)
                 updateHPBar('ai-hp', aiHP, aiMax)
                 triggerFlickerEffect('ai-img')
                 takeHit('ai-img')
-                    // updateBattleLog('玩家', playerChoice, actual, playerATK);
+
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'green' // 正确时btn1变为绿色
                     await playAudio(correctAudioPath)
@@ -654,9 +808,12 @@
                 // 当AI的血量清0时
                 if (aiHP === 0) {
                     handleAIFaint() // 处理AI失败后的逻辑
+                    aiATK = 0
                 }
             } else {
                 console.log('Player wrong')
+                judge = false;
+                updateBattleLogjudge(judge, '玩家');
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'red' // 错误时btn1变为红色
                     await playAudio(wrongAudioPath)
@@ -672,32 +829,36 @@
             }, 2000)
 
             turnGlo = 2
+
             updateTurn(turnGlo)
         } else if (turnGlo === 2) {
             // 模型的回合
             if (modelPrediction === actualType) {
+                attackEffect(2)
                 console.log('model win')
-                playerHP = Math.max(0, playerHP - 1) // 减少玩家的 HP
-                showDamage(damageX2, damageY2, 1)
+                playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
+                showDamage(damageX2, damageY2, aiATK)
                 playAudio(heart)
                 updateHPBar('player-hp', playerHP, playerMax)
                 triggerFlickerEffect('player-img')
                 takeHit('player-img')
                 showAIJudgment('全真音频')
-            } else {
-                if (modelPrediction == 'nullans') {
-                    console.log('ERROR101')
-                } else {
-                    console.log('model wrong')
-                    showAIJudgment('合成音频')
-                }
+                updateBattleLog('AI', aiATK, '玩家');
             }
-
-            turnGlo = 1
-            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
-            loadNextAudio()
+        } else {
+            if (modelPrediction == 'nullans') {
+                console.log('ERROR101')
+            } else {
+                console.log('model wrong')
+                showAIJudgment('合成音频')
+            }
         }
+
+        turnGlo = 1
+        updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+        loadNextAudio()
     }
+
 
     function triggerPredict(audioPath) {
         fetch('/predict', {
@@ -721,13 +882,13 @@
     }
 
     function takeHit(img) {
-        var img = document.getElementById(img);
-        img.classList.add("hit");
+        var img = document.getElementById(img)
+        img.classList.add('hit')
 
         // 延时移除hit类，以便下次受击可以重新触发动画
         setTimeout(function() {
-            img.classList.remove("hit");
-        }, 2000); // 显示3秒后恢复
+                img.classList.remove('hit')
+            }, 2000) // 显示3秒后恢复
     }
 
     // ---- HP条和震动效果 ----
@@ -818,10 +979,19 @@
 
         aiFainted = true // 标记AI已经失败
 
-        if (playerItems.length < 4) {
+        if (playerItems.length < 20) {
             // 如果玩家的道具数量少于4个，显示卡片选择框
             showCardSelection()
         }
+    }
+
+    // 更新初始位置
+    function updatePositions() {
+        var playerImg = document.getElementById('player-img')
+        playerImg.style.transform = `translate(${playerPosition.x}px, ${playerPosition.y}px)`
+
+        var aiImg = document.getElementById('ai-img')
+        aiImg.style.transform = `translate(${aiPosition.x}px, ${aiPosition.y}px)`
     }
 
     function handleAINewPokemon() {
@@ -894,6 +1064,7 @@
                         if (aiFainted) {
                             handleAINewPokemon()
                             aiFainted = false // 重置标志
+                            aiATK = 1
                         }
                     })
                 } else {
@@ -947,7 +1118,7 @@
     }
 
     function selectCard(item) {
-        if (playerItems.length < 4) {
+        if (playerItems.length < 20) {
             playerItems.push(item)
             applyItemEffect(item)
         }
@@ -960,6 +1131,7 @@
         switch (item) {
             case 'increase_hp_max':
                 playerMax += 2 // 增加最大 HP
+                playerHP = Math.min(playerMax, playerHP + 2)
                 break
             case 'restore_hp':
                 playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
@@ -968,10 +1140,11 @@
                 playerATK += 1 // 增加攻击力
                 break
             case 'multi_attack':
-                // 设置连击攻击效果的逻辑
+                multiatknum++
                 break
         }
         updateHPBar('player-hp', playerHP, playerMax) // 更新血条
+        updatePlayerTooltip() // 更新面板中的数值
     }
 
     // ---- 文本显示动画 ----
@@ -1027,26 +1200,26 @@
 
     var style = document.createElement('style')
     style.textContent = `
-                                                                    .clickEffect {
-                                                                        position: absolute;
-                                                                        width: 65px;
-                                                                        height: 65px;
-                                                                        border: 1px solid transparent;
-                                                                        border-radius: 50%;
-                                                                        animation: clickEffectAnimation 0.5s ease-out;
-                                                                        pointer-events: none;
-                                                                        box-sizing: border-box;
-                                                                    }
-                                                                    @keyframes clickEffectAnimation {
-                                                                        0% {
-                                                                            transform: scale(0);
-                                                                            opacity: 1;
-                                                                        }
-                                                                        100% {
-                                                                            transform: scale(1.5);
-                                                                            opacity: 0;
-                                                                        }
-                                                                    }`
+                                                                                                    .clickEffect {
+                                                                                                        position: absolute;
+                                                                                                        width: 65px;
+                                                                                                        height: 65px;
+                                                                                                        border: 1px solid transparent;
+                                                                                                        border-radius: 50%;
+                                                                                                        animation: clickEffectAnimation 0.5s ease-out;
+                                                                                                        pointer-events: none;
+                                                                                                        box-sizing: border-box;
+                                                                                                    }
+                                                                                                    @keyframes clickEffectAnimation {
+                                                                                                        0% {
+                                                                                                            transform: scale(0);
+                                                                                                            opacity: 1;
+                                                                                                        }
+                                                                                                        100% {
+                                                                                                            transform: scale(1.5);
+                                                                                                            opacity: 0;
+                                                                                                        }
+                                                                                                    }`
     document.head.appendChild(style)
 
     // ---- 引导功能 ----
@@ -1153,17 +1326,63 @@
     }
 
     function hideTImage() {
-        const tImg = document.getElementById('t-img');
-        tImg.style.display = 'none'; // 隐藏 t-img
-        const xtImg = document.getElementById('xt-img');
-        xtImg.style.display = 'block'; // 隐藏 t-img
+        const tImg = document.getElementById('t-img')
+        tImg.style.display = 'none' // 隐藏 t-img
+        const xtImg = document.getElementById('xt-img')
+        xtImg.style.display = 'block' // 隐藏 t-img
+    }
+
+    function attackEffect(attacker) {
+        var imgElement
+
+        if (attacker === 1) {
+            imgElement = document.getElementById('player-img')
+        } else if (attacker === 2) {
+            imgElement = document.getElementById('ai-img')
+        } else {
+            console.error('Invalid attacker specified in attackEffect')
+            return
+        }
+
+        // 添加攻击动画的类
+        imgElement.classList.add('attack-animation')
+
+        // 动画结束后移除类
+        imgElement.addEventListener(
+            'animationend',
+            function() {
+                imgElement.classList.remove('attack-animation')
+            }, {
+                once: true
+            }
+        )
     }
 
     function showTImage() {
-        const tImg = document.getElementById('t-img');
-        tImg.style.display = 'block'; // 显示 t-img
-        const xtImg = document.getElementById('xt-img');
-        xtImg.style.display = 'none'; // 隐藏 t-img
+        const tImg = document.getElementById('t-img')
+        tImg.style.display = 'block' // 显示 t-img
+        const xtImg = document.getElementById('xt-img')
+        xtImg.style.display = 'none' // 隐藏 t-img
+    }
+
+    function updateBattleLog(attacker, damage, target) {
+        const battleLog = document.getElementById('battle-log');
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `${attacker} 对 ${target} 造成了 ${damage} 点伤害`;
+        battleLog.appendChild(logEntry);
+        battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
+    }
+
+    function updateBattleLogjudge(judge, attacker) {
+        const battleLog = document.getElementById('battle-log');
+        const logEntry = document.createElement('div');
+        if (judge == true) {
+            logEntry.textContent = `${attacker} 判定結果與主意識相同`;
+        } else {
+            logEntry.textContent = `${attacker} 判定結果與主意識不一致`;
+        }
+        battleLog.appendChild(logEntry);
+        battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
     }
 </script>
 
