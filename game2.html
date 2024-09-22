@@ -80,6 +80,15 @@
             /* 添加平滑动画 */
         }
         
+        @keyframes hp-fill-animation {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+        
         .battle-area {
             overflow: visible;
             flex: 1;
@@ -1002,7 +1011,7 @@
         // 增加AI的最大HP并重置当前HP
         aiMax += 2 // 增加AI的最大HP
         aiHP = aiMax
-        updateHPBar('ai-hp', aiHP, aiMax)
+        animateHPBar('ai-hp', aiMax);
 
         console.log(`AI has a new Pokemon with max HP: ${aiMax}`)
     }
@@ -1383,6 +1392,31 @@
         }
         battleLog.appendChild(logEntry);
         battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
+    }
+
+    function animateHPBar(hpElementId, maxHP) {
+        const hpElement = document.getElementById(hpElementId);
+        let currentHP = 0;
+        hpElement.style.width = '0%'; // 初始化血条为0
+
+        // 计算每次增加的HP量，根据动画时长和帧率设置
+        const duration = 3000; // 动画总时长3秒
+        const interval = 50; // 每50毫秒更新一次
+        const increment = maxHP / (duration / interval); // 每次增加的HP值
+
+        // 定义一个动画计时器
+        const animationInterval = setInterval(() => {
+            currentHP = Math.min(currentHP + increment, maxHP); // 防止超出maxHP
+            const hpPercentage = (currentHP / maxHP) * 100; // 计算当前宽度百分比
+            hpElement.style.width = `${hpPercentage}%`;
+            hpElement.textContent = `${Math.round(currentHP)} HP`; // 显示当前HP值
+
+            // 当达到最大HP时，清除计时器
+            if (currentHP >= maxHP) {
+                clearInterval(animationInterval);
+                hpElement.textContent = `${maxHP} HP`; // 最终显示满血
+            }
+        }, interval);
     }
 </script>
 
