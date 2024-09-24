@@ -539,21 +539,81 @@
         
         .battle-log {
             position: relative;
+            top: 10%;
+            /* 调整这个值来设置位置 */
+            left: 50%;
+            transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 10px 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-            font-size: 18px;
+            font-size: 24px;
             text-align: left;
             z-index: 1000;
-            height: 50px;
+            height: 70px;
             width: 100%;
             /* 设置为100% */
+            /* 固定宽度 */
             overflow-y: auto;
-            max-height: 200px;
+            /* 启用垂直滚动条 */
             margin-bottom: 10px;
-            /* 与其他内容的间距 */
+            /* 最大高度，防止占据太多空间 */
+        }
+        
+        .combined-scoreboard {
+            width: 70%;
+            height: 30px;
+            background-color: #333;
+            border-radius: 15px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #555;
+            transition: background 0.3s ease-in-out;
+            /* 平滑背景变化 */
+        }
+        /* 光线扫描动画容器 */
+        
+        .combined-scoreboard::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50px;
+            width: 50px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.5);
+            transform: skewX(-20deg);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            /* 默认隐藏光线 */
+        }
+        /* hover 时显示光线扫描动画 */
+        
+        .combined-scoreboard:hover::after {
+            animation: scan 1.5s infinite;
+            /* 光线扫描动画 */
+            opacity: 1;
+            /* 显示光线 */
+        }
+        /* 光线扫描动画关键帧 */
+        
+        @keyframes scan {
+            0% {
+                left: -50px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        .score-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: background 0.3s ease-in-out;
+            /* 平滑背景变化 */
         }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
@@ -563,6 +623,9 @@
     <div class="header">
         <div class="audio">
             <div id="audio-icon" class="play-icon"></div>
+        </div>
+        <div class="combined-scoreboard" id="combined-bar">
+            <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
         </div>
     </div>
     <div id="turn-info" class="turn-info">
@@ -645,15 +708,21 @@
     var actualType = ''
     var playerPrediction = ''
     let judge = false
-        // 定义玩家和 AI 的位置
+    let aijudge = false
+    let playerScore = 50;
+    let aiScore = 50;
+    let correctAnswers = 0; // 玩家答对题数
+    let totalQuestions = 0; // 总题数
+    // 定义玩家和 AI 的位置
     var playerPosition = {
-        x: 0,
-        y: 100
+        x: 10,
+        y: 80
     }
     var aiPosition = {
         x: 60,
-        y: 70
+        y: 50
     }
+    let decisionTimer
 
     // 获取元素的引用
     const playerImg = document.getElementById('player-img')
@@ -672,9 +741,9 @@
 
     // 初次调用，确保数值正确
     updatePlayerTooltip()
-
-    // 当玩家的攻击力或血量发生变化时，调用此函数
-    // 例如，在你的 `applyItemEffect` 函数和其他修改 `playerATK`、`playerHP`、`playerMax` 的地方调用
+    updateScoreBar()
+        // 当玩家的攻击力或血量发生变化时，调用此函数
+        // 例如，在你的 `applyItemEffect` 函数和其他修改 `playerATK`、`playerHP`、`playerMax` 的地方调用
 
     // 鼠标进入时显示面板
     playerImg.addEventListener('mouseenter', function() {
@@ -693,8 +762,8 @@
     updatePositions()
         // ---- Predict设置 ----
     triggerPredict(audioPath)
-
-    // ---- WaveSurfer 音频播放器设置 ----
+    disableButtons(true)
+        // ---- WaveSurfer 音频播放器设置 ----
     var audioPath = "{{ url_for('static', filename=audio_path) }}"
     var wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -706,22 +775,31 @@
     // 加载音频并在页面加载时自动播放
     wavesurfer.load(audioPath)
     wavesurfer.on('ready', function() {
-        wavesurfer.play()
-        togglePlayPauseIcon()
-        const initialText = document.querySelector('#associated-text').textContent
-        if (initialText) {
-            showTextAnimated(initialText)
-        }
+            wavesurfer.play()
+            togglePlayPauseIcon()
+            const initialText = document.querySelector('#associated-text').textContent
+            if (initialText) {
+                showTextAnimated(initialText)
+            }
+        })
+        // When audio finishes, enable buttons and start the 5-second timer
+    wavesurfer.on('finish', function() {
+        // Enable the buttons
+        disableButtons(false)
+            // Start the 5-second countdown
+        startDecisionTimer()
     })
 
     // ---- 事件监听器 ----
     document.getElementById('audio-icon').addEventListener('click', togglePlayPause)
     document.getElementById('btn1').addEventListener('click', function() {
+        clearInterval(decisionTimer);
         playerPrediction = 'r'
         evaluateGuess(1)
         hideTImage()
     })
     document.getElementById('btn2').addEventListener('click', function() {
+        clearInterval(decisionTimer);
         playerPrediction = 'f'
         evaluateGuess(1)
         hideTImage()
@@ -793,11 +871,12 @@
         if (turnGlo === 1) {
             // 玩家的回合
             if (playerPrediction === actualType) {
+                console.log('Player win')
                 judge = true;
                 updateBattleLogjudge(judge, '玩家');
                 updateBattleLog('玩家', playerATK * multiatknum, 'AI');
+                updateScore('player')
 
-                console.log('Player win')
                 attackEffect(1)
                 aiHP = Math.max(0, aiHP - playerATK * multiatknum) // 减少 AI 的 HP
                 showDamage(damageX, damageY, playerATK * multiatknum)
@@ -845,6 +924,7 @@
             if (modelPrediction === actualType) {
                 attackEffect(2)
                 console.log('model win')
+                updateScore('ai')
                 playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
                 showDamage(damageX2, damageY2, aiATK)
                 playAudio(heart)
@@ -852,22 +932,29 @@
                 triggerFlickerEffect('player-img')
                 takeHit('player-img')
                 showAIJudgment('全真音频')
-                updateBattleLog('AI', aiATK, '玩家');
-            }
-        } else {
-            if (modelPrediction == 'nullans') {
-                console.log('ERROR101')
+                if (modelPrediction == 'r') {
+                    aijudge = true;
+                } else {
+                    aijudge = false;
+                }
+                updateBattleLogjudge(aijudge, '木馬老高');
+                updateBattleLog('木馬老高', aiATK, '玩家');
             } else {
-                console.log('model wrong')
-                showAIJudgment('合成音频')
+                if (modelPrediction == 'nullans') {
+                    console.log('ERROR101')
+                } else {
+                    console.log('model wrong')
+                    showAIJudgment('合成音频')
+                }
             }
+
+            turnGlo = 1
+            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+            setTimeout(() => {
+                loadNextAudio();
+            }, 3000);
         }
-
-        turnGlo = 1
-        updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
-        loadNextAudio()
     }
-
 
     function triggerPredict(audioPath) {
         fetch('/predict', {
@@ -1011,6 +1098,7 @@
         // 增加AI的最大HP并重置当前HP
         aiMax += 2 // 增加AI的最大HP
         aiHP = aiMax
+        updateAIBattleLog(aiMax);
         animateHPBar('ai-hp', aiMax);
 
         console.log(`AI has a new Pokemon with max HP: ${aiMax}`)
@@ -1053,6 +1141,15 @@
     }
 
     function loadNextAudio() {
+        clearInterval(decisionTimer)
+        const countdownElement = document.getElementById('decision-countdown')
+        if (countdownElement) {
+            document.body.removeChild(countdownElement)
+        }
+
+        // Disable the decision buttons
+        disableButtons(true)
+
         fetch('/game') // 重新请求 /game 以获取新音频路径和对应文字
             .then((response) => response.text())
             .then((html) => {
@@ -1137,19 +1234,33 @@
     }
 
     function applyItemEffect(item) {
+        const battleLog = document.getElementById('battle-log');
+        const logEntry = document.createElement('div');
         switch (item) {
             case 'increase_hp_max':
                 playerMax += 2 // 增加最大 HP
                 playerHP = Math.min(playerMax, playerHP + 2)
+                logEntry.textContent = `玩家最大血量增加為${playerMax}`;
+                battleLog.appendChild(logEntry);
+                battleLog.scrollTop = battleLog.scrollHeight;
                 break
             case 'restore_hp':
                 playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
+                logEntry.textContent = `玩家恢復 5 HP`;
+                battleLog.appendChild(logEntry);
+                battleLog.scrollTop = battleLog.scrollHeight;
                 break
             case 'increase_attack':
                 playerATK += 1 // 增加攻击力
+                logEntry.textContent = `玩家攻擊力增加 1 點`;
+                battleLog.appendChild(logEntry);
+                battleLog.scrollTop = battleLog.scrollHeight;
                 break
             case 'multi_attack':
                 multiatknum++
+                logEntry.textContent = `玩家獲得連續攻擊`;
+                battleLog.appendChild(logEntry);
+                battleLog.scrollTop = battleLog.scrollHeight;
                 break
         }
         updateHPBar('player-hp', playerHP, playerMax) // 更新血条
@@ -1209,26 +1320,26 @@
 
     var style = document.createElement('style')
     style.textContent = `
-                                                                                                    .clickEffect {
-                                                                                                        position: absolute;
-                                                                                                        width: 65px;
-                                                                                                        height: 65px;
-                                                                                                        border: 1px solid transparent;
-                                                                                                        border-radius: 50%;
-                                                                                                        animation: clickEffectAnimation 0.5s ease-out;
-                                                                                                        pointer-events: none;
-                                                                                                        box-sizing: border-box;
-                                                                                                    }
-                                                                                                    @keyframes clickEffectAnimation {
-                                                                                                        0% {
-                                                                                                            transform: scale(0);
-                                                                                                            opacity: 1;
-                                                                                                        }
-                                                                                                        100% {
-                                                                                                            transform: scale(1.5);
-                                                                                                            opacity: 0;
-                                                                                                        }
-                                                                                                    }`
+                                                                                                                .clickEffect {
+                                                                                                                    position: absolute;
+                                                                                                                    width: 65px;
+                                                                                                                    height: 65px;
+                                                                                                                    border: 1px solid transparent;
+                                                                                                                    border-radius: 50%;
+                                                                                                                    animation: clickEffectAnimation 0.5s ease-out;
+                                                                                                                    pointer-events: none;
+                                                                                                                    box-sizing: border-box;
+                                                                                                                }
+                                                                                                                @keyframes clickEffectAnimation {
+                                                                                                                    0% {
+                                                                                                                        transform: scale(0);
+                                                                                                                        opacity: 1;
+                                                                                                                    }
+                                                                                                                    100% {
+                                                                                                                        transform: scale(1.5);
+                                                                                                                        opacity: 0;
+                                                                                                                    }
+                                                                                                                }`
     document.head.appendChild(style)
 
     // ---- 引导功能 ----
@@ -1374,6 +1485,67 @@
         xtImg.style.display = 'none' // 隐藏 t-img
     }
 
+    function startDecisionTimer() {
+        let countdown = 5;
+        const countdownElement = document.createElement('div');
+        countdownElement.id = 'decision-countdown';
+        countdownElement.style.position = 'fixed';
+        countdownElement.style.top = '45%';
+        countdownElement.style.left = '50%';
+        countdownElement.style.transform = 'translate(-50%, -50%)';
+        countdownElement.style.fontSize = '68px';
+        countdownElement.style.color = 'white';
+        countdownElement.style.zIndex = '1000';
+        countdownElement.style.width = '200px';
+        countdownElement.style.height = '200px';
+        countdownElement.style.borderRadius = '50%';
+        countdownElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        countdownElement.style.display = 'flex';
+        countdownElement.style.alignItems = 'center';
+        countdownElement.style.justifyContent = 'center';
+        countdownElement.style.boxShadow = '0 0 20px 10px rgba(255, 255, 255, 0.8)';
+        document.body.appendChild(countdownElement);
+
+        countdownElement.textContent = `${countdown}`;
+
+        decisionTimer = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                countdownElement.textContent = `${countdown}`;
+            } else {
+                clearInterval(decisionTimer);
+                document.body.removeChild(countdownElement);
+                playerPrediction = 'f'; // Default incorrect value
+                evaluateGuess(1);
+                hideTImage();
+                disableButtons(true);
+            }
+        }, 1000);
+    }
+
+
+    function animateHPBar(hpElementId, maxHP) {
+        const hpElement = document.getElementById(hpElementId);
+        let currentHP = 0;
+        hpElement.style.width = '0%'; // 初始化血条为0
+        // 计算每次增加的HP量，根据动画时长和帧率设置
+        const duration = 3000; // 动画总时长3秒
+        const interval = 50; // 每50毫秒更新一次
+        const increment = maxHP / (duration / interval); // 每次增加的HP值
+        // 定义一个动画计时器
+        const animationInterval = setInterval(() => {
+            currentHP = Math.min(currentHP + increment, maxHP); // 防止超出maxHP
+            const hpPercentage = (currentHP / maxHP) * 100; // 计算当前宽度百分比
+            hpElement.style.width = `${hpPercentage}%`;
+            hpElement.textContent = `${Math.round(currentHP)} HP`; // 显示当前HP值
+            // 当达到最大HP时，清除计时器
+            if (currentHP >= maxHP) {
+                clearInterval(animationInterval);
+                hpElement.textContent = `${maxHP} HP`; // 最终显示满血
+            }
+        }, interval);
+    }
+
     function updateBattleLog(attacker, damage, target) {
         const battleLog = document.getElementById('battle-log');
         const logEntry = document.createElement('div');
@@ -1381,6 +1553,15 @@
         battleLog.appendChild(logEntry);
         battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
     }
+
+    function updateAIBattleLog(HP) {
+        const battleLog = document.getElementById('battle-log');
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `更強的木馬老高出現了 總血量為${HP}`;
+        battleLog.appendChild(logEntry);
+        battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
+    }
+
 
     function updateBattleLogjudge(judge, attacker) {
         const battleLog = document.getElementById('battle-log');
@@ -1394,29 +1575,77 @@
         battleLog.scrollTop = battleLog.scrollHeight; // 自动滚动到底部
     }
 
-    function animateHPBar(hpElementId, maxHP) {
-        const hpElement = document.getElementById(hpElementId);
-        let currentHP = 0;
-        hpElement.style.width = '0%'; // 初始化血条为0
+    function updateScore(winner) {
+        totalQuestions++;
 
-        // 计算每次增加的HP量，根据动画时长和帧率设置
-        const duration = 3000; // 动画总时长3秒
-        const interval = 50; // 每50毫秒更新一次
-        const increment = maxHP / (duration / interval); // 每次增加的HP值
-
-        // 定义一个动画计时器
-        const animationInterval = setInterval(() => {
-            currentHP = Math.min(currentHP + increment, maxHP); // 防止超出maxHP
-            const hpPercentage = (currentHP / maxHP) * 100; // 计算当前宽度百分比
-            hpElement.style.width = `${hpPercentage}%`;
-            hpElement.textContent = `${Math.round(currentHP)} HP`; // 显示当前HP值
-
-            // 当达到最大HP时，清除计时器
-            if (currentHP >= maxHP) {
-                clearInterval(animationInterval);
-                hpElement.textContent = `${maxHP} HP`; // 最终显示满血
+        if (winner === 'player') {
+            correctAnswers++;
+            playerScore += 10; // 玩家得分增加
+            if (correctAnswers > 1) {
+                playerScore += 5; // 连续答对增加更多分数
             }
-        }, interval);
+            playerScore = Math.min(playerScore, 100); // 限制最大值为100
+            aiScore = 100 - playerScore; // AI得分相应减少
+        } else if (winner === 'ai') {
+            correctAnswers = 0; // 连续答对被打断
+            aiScore += 10; // AI得分增加
+            aiScore = Math.min(aiScore, 100); // 限制最大值为100
+            playerScore = 100 - aiScore; // 玩家得分相应减少
+        }
+
+        updateScoreBar();
+        checkGameOver();
+    }
+
+    function updateScoreBar() {
+        const combinedBar = document.getElementById('combined-bar');
+
+        // 计算玩家和 AI 的得分比例
+        const playerPercentage = playerScore;
+        const aiPercentage = aiScore;
+
+        // 设置背景为动态的线性渐变，根据分数更新分割线
+        combinedBar.style.background = `linear-gradient(135deg, #4caf50 ${playerPercentage}%, #f44336 ${playerPercentage}%)`;
+    }
+
+
+    function checkGameOver() {
+        if (playerScore >= 100) {
+            displayGameOver('玩家赢了！');
+        } else if (aiScore >= 100 || playerHP <= 0) {
+            displayGameOver('AI赢了！');
+        }
+    }
+
+    function displayGameOver(message) {
+        const gameOverPage = document.createElement('div');
+        gameOverPage.style.position = 'fixed';
+        gameOverPage.style.top = '0';
+        gameOverPage.style.left = '0';
+        gameOverPage.style.width = '100%';
+        gameOverPage.style.height = '100%';
+        gameOverPage.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        gameOverPage.style.display = 'flex';
+        gameOverPage.style.flexDirection = 'column';
+        gameOverPage.style.alignItems = 'center';
+        gameOverPage.style.justifyContent = 'center';
+        gameOverPage.style.color = 'white';
+        gameOverPage.style.zIndex = '10000';
+
+        const messageElement = document.createElement('h1');
+        messageElement.textContent = message;
+
+        const scoreElement = document.createElement('p');
+        scoreElement.textContent = `玩家答对了 ${correctAnswers} / ${totalQuestions} 题`;
+
+        const restartButton = document.createElement('button');
+        restartButton.textContent = '重新开始';
+        restartButton.onclick = () => location.reload();
+
+        gameOverPage.appendChild(messageElement);
+        gameOverPage.appendChild(scoreElement);
+        gameOverPage.appendChild(restartButton);
+        document.body.appendChild(gameOverPage);
     }
 </script>
 
