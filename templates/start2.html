@@ -68,7 +68,7 @@
         
         .card-container .card:hover .dark-overlay {
             opacity: 1;
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(0, 0, 0, 0.5);
             /* 半透明黑色 */
         }
         
@@ -175,7 +175,7 @@
         <div class="card-container">
 
             <!-- 第一个卡片，点击后跳转到指定页面 -->
-            <div class="card" style="background-image: url('static/images/image1.jpg');" id="play-game-button">
+            <div class="card" style="background-image: url('static/images/Target2.png');" id="play-game-button">
                 <div class="dark-overlay"></div>
                 <div class="content">
                     <h3>老高</h3>
@@ -183,7 +183,7 @@
             </div>
 
             <!-- 第二个卡片，点击后跳转到另一个页面 -->
-            <div class="card" style="background-image: url('static/images/image2.jpg');" onclick="window.location.href='chenwenqian.html';">
+            <div class="card" style="background-image: url('static/images/Target3.png');" id="play-game2-button">
                 <div class="dark-overlay"></div>
                 <div class="content">
                     <h3>陳文茜</h3>
@@ -216,6 +216,9 @@
 
     document.getElementById('play-game-button').addEventListener('click', function() {
         window.open('/game', '_blank');
+    });
+    document.getElementById('play-game2-button').addEventListener('click', function() {
+        window.open('/gametwo', '_blank');
     });
 </script>
 
