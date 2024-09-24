@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="csshake.min.css" />
@@ -8,708 +9,774 @@
     <link rel="stylesheet" type="text/css" href="https://csshake.surge.sh/csshake.min.css" />
     <title>Game Interface</title>
     <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #000;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        /* 视口高度 */
-      }
-      
-      .main-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .header {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        padding: 10px;
-        background-color: #282c34;
-        color: #fff;
-      }
-      
-      .audio {
-        position: relative;
-      }
-      
-      .player .hp-bar,
-      .ai .hp-bar {
-        /* position: absolute; 移除 */
-        height: 20px;
-        width: 250px;
-        /* 设置固定宽度 */
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        margin-bottom: 10px;
-        /* 调整间距 */
-      }
-      
-      .player .hp-bar {
-        top: 150px;
-        left: 35%;
-        width: 250px;
-      }
-      
-      .ai .hp-bar {
-        top: 100px;
-        right: 42%;
-        width: 250px;
-      }
-      
-      .hp-fill {
-        height: 100%;
-        background-color: red;
-        text-align: center;
-        line-height: 20px;
-        color: #000;
-        font-weight: bold;
-        transition: width 0.3s ease-in-out;
-        /* 添加平滑动画 */
-      }
-      
-      @keyframes hp-fill-animation {
-        0% {
-          width: 0%;
+        html,
+        body {
+            margin: 0;
+            padding: 0;
         }
-        100% {
-          width: 100%;
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* 视口高度 */
         }
-      }
-      
-      .battle-area {
-        overflow: visible;
-        flex: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: relative;
-        /* 垂直居中 */
-        padding: 20px;
-        background-color: #222;
-        background-image: url('static\\images\\background.png');
-        /* position: relative; 移除 */
-        /* height: 405px; 移除，允许高度自适应 */
-        flex-wrap: wrap; /* 如果需要在小屏幕上换行 */
-      }
-      
-      .player,
-      .ai {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-      }
-      
-      #player-img,
-      #ai-img {
-        height: 350px;
-        width: 350px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        position: relative;
-        /* 移除 */
-        z-index: 10;
-        /* 移除 top、left、right、transform 等属性 */
-        margin: 0 auto;
-        /* 使图片水平居中 */
-        position: relative;
-        /* 保持 player-img 相对定位 */
-        z-index: 1;
-        /* player-img 在底层 */
-      }
-      
-      #player-img {
-        background-image: url('static\\images\\pokemon1.png');
-        /* 移除 top, left, transform 属性 */
-      }
-      
-      #ai-img {
-        background-image: url('static\\images\\pokemon4.png');
-        /* 移除 top, right, transform 属性 */
-      }
-      
-      .footer {
-        width: 100%;
-        background-color: #333;
-        padding: 20px;
-        color: #000;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-      /* 添加闪烁效果 */
-      
-      @keyframes repeatEffect {
-        0% {
-          transform: scale(1);
-          opacity: 1;
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
-        50% {
-          transform: scale(1.2);
-          opacity: 0.5;
+        
+        .header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 10px;
+            background-color: #282c34;
+            color: #fff;
         }
-        100% {
-          transform: scale(1);
-          opacity: 1;
+        
+        .audio {
+            position: relative;
         }
-      }
-      /* 玩家攻击动画 */
-      
-      @keyframes player-attack-animation {
-        0% {
-          transform: translateX(0) rotate(0deg);
-          opacity: 1;
+        
+        .player .hp-bar,
+        .ai .hp-bar {
+            /* position: absolute; 移除 */
+            height: 20px;
+            width: 250px;
+            /* 设置固定宽度 */
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            /* 调整间距 */
         }
-        10% {
-          transform: translateX(0) rotate(-45deg);
-          opacity: 1;
+        
+        .player .hp-bar {
+            top: 150px;
+            left: 35%;
+            width: 250px;
         }
-        40% {
-          transform: translateX(100vw) rotate(-45deg);
-          opacity: 1;
+        
+        .ai .hp-bar {
+            top: 100px;
+            right: 42%;
+            width: 250px;
         }
-        40.01% {
-          transform: translateX(-100vw) rotate(-45deg);
-          opacity: 1;
+        
+        .hp-fill {
+            height: 100%;
+            background-color: red;
+            text-align: center;
+            line-height: 20px;
+            color: #000;
+            font-weight: bold;
+            transition: width 0.3s ease-in-out;
+            /* 添加平滑动画 */
         }
-        70% {
-          transform: translateX(0) rotate(-45deg);
-          opacity: 1;
+        
+        @keyframes hp-fill-animation {
+            0% {
+                width: 0%;
+            }
+            100% {
+                width: 100%;
+            }
         }
-        100% {
-          transform: translateX(0) rotate(0deg);
-          opacity: 1;
+        
+        .battle-area {
+            overflow: visible;
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            /* 垂直居中 */
+            padding: 20px;
+            background-color: #222;
+            background-image: url('static\\images\\background.png');
+            /* position: relative; 移除 */
+            /* height: 405px; 移除，允许高度自适应 */
+            flex-wrap: wrap;
+            /* 如果需要在小屏幕上换行 */
         }
-      }
-      
-      #player-img.attack-animation {
-        animation: player-attack-animation 1.5s forwards linear;
-      }
-      /* AI 攻击动画 */
-      
-      @keyframes ai-attack-animation {
-        0% {
-          transform: translateX(0) rotate(0deg);
-          opacity: 1;
+        
+        .player,
+        .ai {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
-        10% {
-          transform: translateX(0) rotate(45deg);
-          opacity: 1;
+        
+        #player-img,
+        #ai-img {
+            height: 350px;
+            width: 350px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+            /* 移除 */
+            z-index: 10;
+            /* 移除 top、left、right、transform 等属性 */
+            margin: 0 auto;
+            /* 使图片水平居中 */
+            position: relative;
+            /* 保持 player-img 相对定位 */
+            z-index: 1;
+            /* player-img 在底层 */
         }
-        40% {
-          transform: translateX(-100vw) rotate(45deg);
-          opacity: 1;
+        
+        #player-img {
+            background-image: url('static\\images\\pokemon1.png');
+            /* 移除 top, left, transform 属性 */
         }
-        40.01% {
-          transform: translateX(100vw) rotate(45deg);
-          opacity: 1;
+        
+        #ai-img {
+            background-image: url('static\\images\\pokemon4.png');
+            /* 移除 top, right, transform 属性 */
         }
-        70% {
-          transform: translateX(0) rotate(45deg);
-          opacity: 1;
+        
+        .footer {
+            width: 100%;
+            background-color: #333;
+            padding: 20px;
+            color: #000;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        100% {
-          transform: translateX(0) rotate(0deg);
-          opacity: 1;
+        /* 添加闪烁效果 */
+        
+        @keyframes repeatEffect {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
-      }
-      
-      #ai-img.attack-animation {
-        animation: ai-attack-animation 1.5s forwards linear;
-      }
-      /* 应用于玩家图片的攻击动画类 */
-      
-      #player-img.attack-animation {
-        animation: player-attack-animation 1s forwards;
-      }
-      
-      #ai-img.attack-animation {
-        animation: ai-attack-animation 1s forwards;
-      }
-      
-      #t-img {
-        position: absolute;
-        /* 绝对定位，使其能够重叠 */
-        top: 20%;
-        /* 根据需要调整位置 */
-        left: 50%;
-        transform: translate(-50%, -50%);
-        /* 将 t-img 居中 */
-        z-index: 2;
-        /* t-img 在 player-img 之上 */
-        height: 30px;
-        width: 30px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-image: url('static/images/t.png');
-        animation: repeatEffect 1s infinite;
-        /* 重复播放动画 */
-      }
-      
-      #xt-img {
-        display: none;
-        position: absolute;
-        /* 绝对定位，使其能够重叠 */
-        top: 7%;
-        /* 根据需要调整位置 */
-        left: 42%;
-        transform: translate(-50%, -50%);
-        /* 将 t-img 居中 */
-        z-index: 2;
-        /* t-img 在 player-img 之上 */
-        height: 30px;
-        width: 30px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-image: url('static/images/xt.png');
-        animation: repeatEffect 1s infinite;
-        /* 重复播放动画 */
-      }
-      
-      .waveform-card {
-        width: 70%;
-        border-radius: 30px;
-        background: #212121;
-        box-shadow: 15px 15px 30px rgb(25, 25, 25), -15px -15px 30px rgb(60, 60, 60);
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      #waveform {
-        width: 100%;
-        margin-bottom: 20px;
-      }
-      
-      .footer .controls {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 20px;
-      }
-      
-      .footer .controls button {
-        width: 220px;
-        height: 170px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        margin: 0 20px;
-        display: inline-block;
-        text-align: center;
-        font-size: 24px;
-        border-radius: 12px;
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-      }
-      
-      #btn1 {
-        background-image: url('static/images/o.png');
-      }
-      
-      #btn2 {
-        background-image: url('static/images/x.png');
-      }
-      
-      .footer .controls button:hover {
-        transform: scale(1.1);
-      }
-      /* Flicker effect on attack */
-      
-      .shake-opacity {
-        animation: flicker 0.2s alternate 5;
-      }
-      
-      #audio-icon {
-        width: 40px;
-        height: 40px;
-        left: 20%;
-        background-size: contain;
-        background-repeat: no-repeat;
-        cursor: pointer;
-      }
-      
-      #play-icon {
-        background-image: url('static/images/play-icon.png');
-      }
-      
-      #pause-icon {
-        background-image: url('static/images/pause-icon.png');
-      }
-      
-      .turn-info {
-        position: fixed;
-        top: 20px;
-        right: 100%;
-        /* Start off-screen to the right */
-        background-color: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        opacity: 0;
-        display: none;
-        /* Initially hidden */
-      }
-      
-      @keyframes slide-right-to-left {
-        0% {
-          right: 100%;
-          /* Start off-screen to the right */
-          opacity: 0;
+        /* 玩家攻击动画 */
+        
+        @keyframes player-attack-animation {
+            0% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            10% {
+                transform: translateX(0) rotate(-45deg);
+                opacity: 1;
+            }
+            40% {
+                transform: translateX(100vw) rotate(-45deg);
+                opacity: 1;
+            }
+            40.01% {
+                transform: translateX(-100vw) rotate(-45deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translateX(0) rotate(-45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
         }
-        25% {
-          right: 50%;
-          /* Center of the screen */
-          transform: translateX(-50%);
-          opacity: 1;
+        
+        #player-img.attack-animation {
+            animation: player-attack-animation 1.5s forwards linear;
         }
-        75% {
-          right: 50%;
-          /* Stay in the center */
-          transform: translateX(-50%);
-          opacity: 1;
+        /* AI 攻击动画 */
+        
+        @keyframes ai-attack-animation {
+            0% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            10% {
+                transform: translateX(0) rotate(45deg);
+                opacity: 1;
+            }
+            40% {
+                transform: translateX(-100vw) rotate(45deg);
+                opacity: 1;
+            }
+            40.01% {
+                transform: translateX(100vw) rotate(45deg);
+                opacity: 1;
+            }
+            70% {
+                transform: translateX(0) rotate(45deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
         }
-        100% {
-          right: -100%;
-          /* Move off-screen to the left */
-          transform: translateX(-50%);
-          opacity: 0;
+        
+        #ai-img.attack-animation {
+            animation: ai-attack-animation 1.5s forwards linear;
         }
-      }
-      
-      .turn-info.hidden {
-        top: -60px;
-        /* Move it off-screen when not active */
-      }
-      
-      .turn-info.show {
-        top: 20px;
-        /* Bring it back on-screen when active */
-      }
-      
-      .card-selection {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: rgba(0, 0, 0, 0.8);
-        padding: 20px;
-        border-radius: 10px;
-        display: flex;
-        justify-content: space-around;
-        z-index: 1000;
-      }
-      
-      .card {
-        background-color: white;
-        color: black;
-        padding: 20px;
-        margin: 10px;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-        border-radius: 10px;
-      }
-      
-      .card:hover {
-        transform: scale(1.1);
-      }
-      
-      .hidden {
-        display: none;
-      }
-      /* 或者你可以改为更具描述性的名字 */
-      
-      .judgment-hidden {
-        display: none;
-      }
-      
-      #associated-text {
-        font-size: 24px;
-        white-space: pre-wrap;
-        color: white;
-        font-family: Arial, sans-serif;
-        /* 保持空格和换行符 */
-      }
-      
-      .letter {
-        display: inline-block;
-        opacity: 0;
-        transition: opacity 0.1s ease-in-out;
-      }
-      
-      .judgment-bubble {
-        position: absolute;
-        top: 20%;
-        right: 20%;
-        background-color: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 15px;
-        border-radius: 10px;
-        opacity: 0;
-        transition: opacity 1s ease-in-out;
-        z-index: 1000;
-        text-align: center;
-      }
-      
-      .judgment-bubble.show {
-        opacity: 1;
-      }
-      
-      .tooltip-panel {
-        position: absolute;
-        top: 50%;
-        left: 100%;
-        /* 将面板定位在图片的右侧 */
-        transform: translateY(-50%);
-        /* 垂直居中 */
-        background-color: rgba(0, 0, 0, 0.8);
-        color: #fff;
-        padding: 10px 15px;
-        border-radius: 8px;
-        text-align: left;
-        white-space: nowrap;
-        z-index: 1000;
-      }
-      
-      .tooltip-panel::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        right: 100%;
-        /* 将小三角定位在面板的左侧 */
-        transform: translateY(-50%);
-        border-width: 5px;
-        border-style: solid;
-        border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
-      }
-      
-      .hidden {
-        display: none;
-      }
-      
-      .damage-number {
-        position: absolute;
-        color: #ff0000;
-        font-size: 36px;
-        font-weight: bold;
-        animation: pop-up 1s ease-out forwards;
-        pointer-events: none;
-        /* 讓數字不影響點擊事件 */
-      }
-      
-      @keyframes pop-up {
-        0% {
-          transform: translateY(0);
-          opacity: 1;
+        /* 应用于玩家图片的攻击动画类 */
+        
+        #player-img.attack-animation {
+            animation: player-attack-animation 1s forwards;
         }
-        100% {
-          transform: translateY(-50px);
-          opacity: 0;
+        
+        #ai-img.attack-animation {
+            animation: ai-attack-animation 1s forwards;
         }
-      }
-      
-      .hit {
-        opacity: 0.5;
-        /* 改变不透明度，表示受击 */
-        filter: brightness(0.5) contrast(1.5);
-      }
-      
-      .battle-log {
-        flex: 1;
-        margin: 0 20px;
-        background-color: rgba(128, 128, 128, 0.5); /* 半透明的灰色背景 */
-        color: white;
-        padding: 10px 20px;
-        border-radius: 10px;
-        text-align: center;
-        font-size: 24px;
-        height: auto;
-        overflow-y: overlay; /* 隐藏溢出内容，移除滚动条 */
-        min-height: 250px; /* 根据需要调整最大高度 */
-        max-height: 250px; /* 根据需要调整最大高度 */
-        max-width: 600px; /* 根据需要调整最大高度 */
-        max-width: 600px; /* 根据需要调整最大高度 */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-        border: 1px solid black; /* 添加黑色边框 */
-        &::-webkit-scrollbar{
-            width:7px;
+        
+        #t-img {
+            position: absolute;
+            /* 绝对定位，使其能够重叠 */
+            top: 20%;
+            /* 根据需要调整位置 */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* 将 t-img 居中 */
+            z-index: 2;
+            /* t-img 在 player-img 之上 */
+            height: 30px;
+            width: 30px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-image: url('static/images/t.png');
+            animation: repeatEffect 1s infinite;
+            /* 重复播放动画 */
         }
-        &::-webkit-scrollbar-button{
-            background: transparent;
-            border-radius: 4px;
+        
+        #xt-img {
+            display: none;
+            position: absolute;
+            /* 绝对定位，使其能够重叠 */
+            top: 7%;
+            /* 根据需要调整位置 */
+            left: 42%;
+            transform: translate(-50%, -50%);
+            /* 将 t-img 居中 */
+            z-index: 2;
+            /* t-img 在 player-img 之上 */
+            height: 30px;
+            width: 30px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-image: url('static/images/xt.png');
+            animation: repeatEffect 1s infinite;
+            /* 重复播放动画 */
         }
-        &::-webkit-scrollbar-track-piece{
-            background: transparent;
+        
+        .waveform-card {
+            width: 70%;
+            border-radius: 30px;
+            background: #212121;
+            box-shadow: 15px 15px 30px rgb(25, 25, 25), -15px -15px 30px rgb(60, 60, 60);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        &::-webkit-scrollbar-thumb{
-            border-radius:4px;
-            background-color: rgba(0,0,0,0.4);
-            border:1px solid slategrey;
+        
+        #waveform {
+            width: 100%;
+            margin-bottom: 20px;
         }
-        &::-webkit-scrollbar-track{
-            box-shadow: transparent;
+        
+        .footer .controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
         }
-    }
-    
-      
-      .combined-scoreboard {
-        width: 70%;
-        height: 30px;
-        background-color: #333;
-        border-radius: 15px;
-        margin: 10px auto;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 15px rgba(0, 0, 0, 0.7);
-        border: 1px solid #555;
-        transition: background 0.3s ease-in-out;
-        /* 平滑背景变化 */
-      }
-      /* 光线扫描动画容器 */
-      
-      .combined-scoreboard::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -50px;
-        width: 50px;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.5);
-        box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.5);
-        transform: skewX(-20deg);
-        transition: opacity 0.3s ease;
-        opacity: 0;
-        /* 默认隐藏光线 */
-      }
-      /* hover 时显示光线扫描动画 */
-      
-      .combined-scoreboard:hover::after {
-        animation: scan 1.5s infinite;
-        /* 光线扫描动画 */
-        opacity: 1;
-        /* 显示光线 */
-      }
-      /* 光线扫描动画关键帧 */
-      
-      @keyframes scan {
-        0% {
-          left: -50px;
+        
+        .footer .controls button {
+            width: 220px;
+            height: 170px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin: 0 20px;
+            display: inline-block;
+            text-align: center;
+            font-size: 24px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.3));
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
         }
-        100% {
-          left: 100%;
+        
+        #btn1 {
+            background-image: url('static/images/o.png');
         }
-      }
-      
-      .score-bar {
-        height: 100%;
-        border-radius: 15px;
-        transition: background 0.3s ease-in-out;
-        /* 平滑背景变化 */
-      }
+        
+        #btn2 {
+            background-image: url('static/images/x.png');
+        }
+        
+        .footer .controls button:hover {
+            transform: scale(1.1);
+        }
+        /* Flicker effect on attack */
+        
+        .shake-opacity {
+            animation: flicker 0.2s alternate 5;
+        }
+        
+        #audio-icon {
+            width: 40px;
+            height: 40px;
+            left: 20%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+        
+        #play-icon {
+            background-image: url('static/images/play-icon.png');
+        }
+        
+        #pause-icon {
+            background-image: url('static/images/pause-icon.png');
+        }
+        
+        .turn-info {
+            position: fixed;
+            top: 20px;
+            right: 100%;
+            /* Start off-screen to the right */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            display: none;
+            /* Initially hidden */
+        }
+        
+        @keyframes slide-right-to-left {
+            0% {
+                right: 100%;
+                /* Start off-screen to the right */
+                opacity: 0;
+            }
+            25% {
+                right: 50%;
+                /* Center of the screen */
+                transform: translateX(-50%);
+                opacity: 1;
+            }
+            75% {
+                right: 50%;
+                /* Stay in the center */
+                transform: translateX(-50%);
+                opacity: 1;
+            }
+            100% {
+                right: -100%;
+                /* Move off-screen to the left */
+                transform: translateX(-50%);
+                opacity: 0;
+            }
+        }
+        
+        .turn-info.hidden {
+            top: -60px;
+            /* Move it off-screen when not active */
+        }
+        
+        .turn-info.show {
+            top: 20px;
+            /* Bring it back on-screen when active */
+        }
+        
+        .card-selection {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+        }
+        
+        .card {
+            background-color: white;
+            color: black;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .card:hover {
+            transform: scale(1.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        /* 或者你可以改为更具描述性的名字 */
+        
+        .judgment-hidden {
+            display: none;
+        }
+        
+        #associated-text {
+            font-size: 24px;
+            white-space: pre-wrap;
+            color: white;
+            font-family: Arial, sans-serif;
+            /* 保持空格和换行符 */
+        }
+        
+        .letter {
+            display: inline-block;
+            opacity: 0;
+            transition: opacity 0.1s ease-in-out;
+        }
+        
+        .judgment-bubble {
+            position: absolute;
+            top: 20%;
+            right: 20%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .judgment-bubble.show {
+            opacity: 1;
+        }
+        
+        .tooltip-panel {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            /* 将面板定位在图片的右侧 */
+            transform: translateY(-50%);
+            /* 垂直居中 */
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: left;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+        
+        .tooltip-panel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            /* 将小三角定位在面板的左侧 */
+            transform: translateY(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .damage-number {
+            position: absolute;
+            color: #ff0000;
+            font-size: 36px;
+            font-weight: bold;
+            animation: pop-up 1s ease-out forwards;
+            pointer-events: none;
+            /* 讓數字不影響點擊事件 */
+        }
+        
+        @keyframes pop-up {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        
+        .hit {
+            opacity: 0.5;
+            /* 改变不透明度，表示受击 */
+            filter: brightness(0.5) contrast(1.5);
+        }
+        
+        .battle-log {
+            flex: 1;
+            margin: 0 20px;
+            background-color: rgba(128, 128, 128, 0.5);
+            /* 半透明的灰色背景 */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 24px;
+            height: auto;
+            overflow-y: overlay;
+            /* 隐藏溢出内容，移除滚动条 */
+            min-height: 250px;
+            /* 根据需要调整最大高度 */
+            max-height: 250px;
+            /* 根据需要调整最大高度 */
+            max-width: 600px;
+            /* 根据需要调整最大高度 */
+            max-width: 600px;
+            /* 根据需要调整最大高度 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            border: 1px solid black;
+            /* 添加黑色边框 */
+            &::-webkit-scrollbar {
+                width: 7px;
+            }
+            &::-webkit-scrollbar-button {
+                background: transparent;
+                border-radius: 4px;
+            }
+            &::-webkit-scrollbar-track-piece {
+                background: transparent;
+            }
+            &::-webkit-scrollbar-thumb {
+                border-radius: 4px;
+                background-color: rgba(0, 0, 0, 0.4);
+                border: 1px solid slategrey;
+            }
+            &::-webkit-scrollbar-track {
+                box-shadow: transparent;
+            }
+        }
+        
+        .combined-scoreboard {
+            width: 70%;
+            height: 30px;
+            background-color: #333;
+            border-radius: 15px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 15px rgba(0, 0, 0, 0.7);
+            border: 1px solid #555;
+            transition: background 0.3s ease-in-out;
+            /* 平滑背景变化 */
+        }
+        /* 光线扫描动画容器 */
+        
+        .combined-scoreboard::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50px;
+            width: 50px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.5);
+            transform: skewX(-20deg);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            /* 默认隐藏光线 */
+        }
+        /* hover 时显示光线扫描动画 */
+        
+        .combined-scoreboard:hover::after {
+            animation: scan 1.5s infinite;
+            /* 光线扫描动画 */
+            opacity: 1;
+            /* 显示光线 */
+        }
+        /* 光线扫描动画关键帧 */
+        
+        @keyframes scan {
+            0% {
+                left: -50px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        .score-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: background 0.3s ease-in-out;
+            /* 平滑背景变化 */
+        }
+        /* 添加 CSS 样式来设置 Tooltip 的位置和显示效果 */
+        /* CSS 样式定义 Tooltip */
+        
+        .score-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+            display: none;
+            /* 初始隐藏 */
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            /* 使 Tooltip 不影响鼠标事件 */
+        }
+        
+        .story-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: #fff;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .story-text {
+            max-width: 800px;
+            font-size: 40px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
-  </head>
+</head>
 
-  <body>
+<body>
+    <div id="story-overlay" class="story-overlay">
+        <div id="story-text" class="story-text"></div>
+    </div>
     <div class="header">
-      <div class="audio">
-        <div id="audio-icon" class="play-icon"></div>
-      </div>
-      <div class="combined-scoreboard" id="combined-bar">
-        <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
-      </div>
+        <div class="audio">
+            <div id="audio-icon" class="play-icon"></div>
+        </div>
+        <div class="combined-scoreboard" id="combined-bar">
+            <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
+        </div>
+        <div id="score-tooltip" class="score-tooltip hidden">
+            玩家答对: <span id="player-correct">0</span> 题
+            <br> AI答对: <span id="ai-correct">0</span> 题
+        </div>
     </div>
     <div id="turn-info" class="turn-info">
-      <p id="turn-text">玩家回合</p>
+        <p id="turn-text">玩家回合</p>
     </div>
     <div class="main-content">
-      <div class="battle-area">
-        <div class="player">
-          <div id="player-arrow" class="turn-arrow"></div>
-          <div class="hp-bar">
-            <div id="player-hp" class="hp-fill">10 HP</div>
-          </div>
+        <div class="battle-area">
+            <div class="player">
+                <div id="player-arrow" class="turn-arrow"></div>
+                <div class="hp-bar">
+                    <div id="player-hp" class="hp-fill">10 HP</div>
+                </div>
 
-          <div class="shake-little">
-            <div id="player-img"></div>
-            <div id="t-img"></div>
-          </div>
+                <div class="shake-little">
+                    <div id="player-img"></div>
+                    <div id="t-img"></div>
+                </div>
 
-          <div id="player-tooltip" class="tooltip-panel hidden">
-            <p>
-              血量: <span id="player-health-value">10</span>/<span id="player-max-health">10</span>
-            </p>
-            <p>
-              攻擊力: <span id="player-attack-value">1</span>
-            </p>
-            <p>
-              連擊攻擊 X<span id="player-multi-attack-value">1</span>
-            </p>
-          </div>
+                <div id="player-tooltip" class="tooltip-panel hidden">
+                    <p>
+                        血量: <span id="player-health-value">10</span>/<span id="player-max-health">10</span>
+                    </p>
+                    <p>
+                        攻擊力: <span id="player-attack-value">1</span>
+                    </p>
+                    <p>
+                        連擊攻擊 X<span id="player-multi-attack-value">1</span>
+                    </p>
+                </div>
+            </div>
+            <div id="battle-log" class="battle-log"></div>
+            <div class="ai">
+                <div id="ai-judgment-bubble" class="judgment-bubble hidden">
+                    <p id="judgment-text"></p>
+                </div>
+                <div id="ai-arrow" class="turn-arrow"></div>
+                <div class="hp-bar">
+                    <div id="ai-hp" class="hp-fill">10 HP</div>
+                </div>
+                <div class="shake-little">
+                    <div id="ai-img"></div>
+                    <div id="xt-img"></div>
+                </div>
+            </div>
+            <div id="card-selection" class="card-selection hidden">
+                <div class="card" id="card1"></div>
+                <div class="card" id="card2"></div>
+                <div class="card" id="card3"></div>
+            </div>
         </div>
-        <div id="battle-log" class="battle-log"></div>
-        <div class="ai">
-          <div id="ai-judgment-bubble" class="judgment-bubble hidden">
-            <p id="judgment-text"></p>
-          </div>
-          <div id="ai-arrow" class="turn-arrow"></div>
-          <div class="hp-bar">
-            <div id="ai-hp" class="hp-fill">10 HP</div>
-          </div>
-          <div class="shake-little">
-            <div id="ai-img"></div>
-            <div id="xt-img"></div>
-          </div>
-        </div>
-        <div id="card-selection" class="card-selection hidden">
-          <div class="card" id="card1"></div>
-          <div class="card" id="card2"></div>
-          <div class="card" id="card3"></div>
-        </div>
-      </div>
     </div>
     <div class="footer">
-      <div class="waveform-card">
-        <p id="associated-text">{{ text }}</p>
-        <div id="waveform" data-audio-path="{{ url_for('static', filename=audio_path) }}"></div>
-      </div>
-      <div class="controls">
-        <button id="btn1" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Correct.mp3') }}"></button>
-        <button id="btn2" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Wrong.mp3') }}"></button>
-      </div>
+        <div class="waveform-card">
+            <p id="associated-text">{{ text }}</p>
+            <div id="waveform" data-audio-path="{{ url_for('static', filename=audio_path) }}"></div>
+        </div>
+        <div class="controls">
+            <button id="btn1" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Correct.mp3') }}"></button>
+            <button id="btn2" class="btnclass" data-audio-path="{{ url_for('static', filename='audio/Wrong.mp3') }}"></button>
+        </div>
 
-      <audio id="audioPlayer" src></audio>
+        <audio id="audioPlayer" src></audio>
     </div>
-  </body>
-  <script>
+</body>
+<script>
     // ---- 全局变量定义 ----
     var multiatknum = 1
-    var playerHP = 10
+    var playerHP = 5
     var playerATK = 1
-    var playerMax = 10
+    var playerMax = 5
     var aiHP = 2
     var aiATK = 1
     let gameover = false
@@ -727,17 +794,18 @@
     let aiScore = 50
     let correctAnswers = 0 // 玩家答对题数
     let totalQuestions = 0 // 总题数
+    let isGuideActive = true;
     // 定义玩家和 AI 的位置
     var playerPosition = {
-      x: 10,
-      y: 80
+        x: 10,
+        y: 80
     }
     var aiPosition = {
-      x: 60,
-      y: 50
+        x: 60,
+        y: 50
     }
     let decisionTimer
-    
+
     // 获取元素的引用
     const playerImg = document.getElementById('player-img')
     const playerTooltip = document.getElementById('player-tooltip')
@@ -745,593 +813,628 @@
     const playerHealthValue = document.getElementById('player-health-value')
     const playerMaxHealth = document.getElementById('player-max-health')
     const playerMultiAttackValue = document.getElementById('player-multi-attack-value')
-    // 更新面板中的数值
+        // 更新面板中的数值
     function updatePlayerTooltip() {
-      playerAttackValue.textContent = playerATK
-      playerHealthValue.textContent = playerHP
-      playerMaxHealth.textContent = playerMax
-      playerMultiAttackValue.textContent = multiatknum
+        playerAttackValue.textContent = playerATK
+        playerHealthValue.textContent = playerHP
+        playerMaxHealth.textContent = playerMax
+        playerMultiAttackValue.textContent = multiatknum
     }
-    
+
+    // 获取元素引用
+    // 获取需要的元素
+    const combinedBar = document.getElementById('combined-bar');
+    const scoreTooltip = document.getElementById('score-tooltip');
+    const playerCorrectDisplay = document.getElementById('player-correct');
+    const aiCorrectDisplay = document.getElementById('ai-correct');
+
+    // 监听 combined-bar 的鼠标进入事件，显示 Tooltip
+    combinedBar.addEventListener('mouseenter', function(event) {
+        // 更新 Tooltip 的内容
+        playerCorrectDisplay.textContent = correctAnswers;
+        aiCorrectDisplay.textContent = totalQuestions - correctAnswers;
+
+        // 获取 combined-bar 的位置
+        const rect = combinedBar.getBoundingClientRect();
+
+        // 设置 Tooltip 的位置在 combined-bar 上方居中
+        scoreTooltip.style.top = `${rect.top - scoreTooltip.offsetHeight - 10}px`; // 上方显示并与 bar 保持 10px 距离
+        scoreTooltip.style.left = `${rect.left + rect.width / 2 - scoreTooltip.offsetWidth / 2}px`; // 居中显示
+
+        // 显示 Tooltip
+        scoreTooltip.style.display = 'block';
+    });
+
+    // 监听 combined-bar 的鼠标离开事件，隐藏 Tooltip
+    combinedBar.addEventListener('mouseleave', function() {
+        scoreTooltip.style.display = 'none';
+    });
+
+
+
     // 初次调用，确保数值正确
     updatePlayerTooltip()
     updateScoreBar()
-    // 当玩家的攻击力或血量发生变化时，调用此函数
-    // 例如，在你的 `applyItemEffect` 函数和其他修改 `playerATK`、`playerHP`、`playerMax` 的地方调用
-    
+        // 当玩家的攻击力或血量发生变化时，调用此函数
+        // 例如，在你的 `applyItemEffect` 函数和其他修改 `playerATK`、`playerHP`、`playerMax` 的地方调用
+
     // 鼠标进入时显示面板
-    playerImg.addEventListener('mouseenter', function () {
-      updatePlayerTooltip() // 确保数值是最新的
-      playerTooltip.classList.remove('hidden')
+    playerImg.addEventListener('mouseenter', function() {
+        updatePlayerTooltip() // 确保数值是最新的
+        playerTooltip.classList.remove('hidden')
     })
-    
+
     // 鼠标移出时隐藏面板
-    playerImg.addEventListener('mouseleave', function () {
-      playerTooltip.classList.add('hidden')
+    playerImg.addEventListener('mouseleave', function() {
+        playerTooltip.classList.add('hidden')
     })
-    
+
     // ---- 初始化HP条 ----
     updateHPBar('player-hp', playerHP, playerMax) // Player 的最大血量为 10
     updateHPBar('ai-hp', aiHP, aiMax) // AI 的最大血量为 2
     updatePositions()
-    // ---- Predict设置 ----
+        // ---- Predict设置 ----
     triggerPredict(audioPath)
     disableButtons(true)
-    // ---- WaveSurfer 音频播放器设置 ----
+        // ---- WaveSurfer 音频播放器设置 ----
     var audioPath = "{{ url_for('static', filename=audio_path) }}"
     var wavesurfer = WaveSurfer.create({
-      container: '#waveform',
-      waveColor: '#fff',
-      progressColor: '#ccc',
-      height: 128
+        container: '#waveform',
+        waveColor: '#fff',
+        progressColor: '#ccc',
+        height: 128
     })
-    
+
     // 加载音频并在页面加载时自动播放
     wavesurfer.load(audioPath)
-    wavesurfer.on('ready', function () {
-      wavesurfer.play()
-      togglePlayPauseIcon()
-      const initialText = document.querySelector('#associated-text').textContent
-      if (initialText) {
-        showTextAnimated(initialText)
-      }
+    wavesurfer.on('ready', function() {
+            togglePlayPauseIcon()
+            if (!isGuideActive) {
+                wavesurfer.play()
+                togglePlayPauseIcon()
+                const initialText = document.querySelector('#associated-text').textContent
+                if (initialText) {
+                    showTextAnimated(initialText)
+                }
+            }
+        })
+        // When audio finishes, enable buttons and start the 5-second timer
+    wavesurfer.on('finish', function() {
+        // Enable the buttons
+        disableButtons(false)
+            // Start the 5-second countdown
+        startDecisionTimer()
     })
-    // When audio finishes, enable buttons and start the 5-second timer
-    wavesurfer.on('finish', function () {
-      // Enable the buttons
-      disableButtons(false)
-      // Start the 5-second countdown
-      startDecisionTimer()
-    })
-    
+
     // ---- 事件监听器 ----
     document.getElementById('audio-icon').addEventListener('click', togglePlayPause)
-    document.getElementById('btn1').addEventListener('click', function () {
-      clearInterval(decisionTimer)
-      playerPrediction = 'r'
-      evaluateGuess(1)
-      hideTImage()
+    document.getElementById('btn1').addEventListener('click', function() {
+        clearInterval(decisionTimer)
+        playerPrediction = 'r'
+        evaluateGuess(1)
+        hideTImage()
     })
-    document.getElementById('btn2').addEventListener('click', function () {
-      clearInterval(decisionTimer)
-      playerPrediction = 'f'
-      evaluateGuess(1)
-      hideTImage()
+    document.getElementById('btn2').addEventListener('click', function() {
+        clearInterval(decisionTimer)
+        playerPrediction = 'f'
+        evaluateGuess(1)
+        hideTImage()
     })
-    document.addEventListener('click', function (event) {
-      createClickEffect(event.pageX, event.pageY)
+    document.addEventListener('click', function(event) {
+        createClickEffect(event.pageX, event.pageY)
     })
-    
+
     // ---- 音频播放/暂停功能 ----
     function togglePlayPause() {
-      if (wavesurfer.isPlaying()) {
-        wavesurfer.pause()
-      } else {
-        wavesurfer.play()
-      }
-      togglePlayPauseIcon()
+        if (wavesurfer.isPlaying()) {
+            wavesurfer.pause()
+        } else {
+            wavesurfer.play()
+        }
+        togglePlayPauseIcon()
     }
-    
+
     function togglePlayPauseIcon() {
-      const teamIcon = document.getElementById('audio-icon')
-      if (wavesurfer.isPlaying()) {
-        teamIcon.style.backgroundImage = "url('static/images/pause-icon.png')"
-      } else {
-        teamIcon.style.backgroundImage = "url('static/images/play-icon.png')"
-      }
+        const teamIcon = document.getElementById('audio-icon')
+        if (wavesurfer.isPlaying()) {
+            teamIcon.style.backgroundImage = "url('static/images/pause-icon.png')"
+        } else {
+            teamIcon.style.backgroundImage = "url('static/images/play-icon.png')"
+        }
     }
-    
+
     function playAudio(audioPath) {
-      const audioPlayer = document.getElementById('audioPlayer')
-      audioPlayer.src = audioPath
-      audioPlayer.play()
+        const audioPlayer = document.getElementById('audioPlayer')
+        audioPlayer.src = audioPath
+        audioPlayer.play()
     }
-    
+
     // ---- 回合切换及评估 ----
     function updateTurn(turnGlo) {
-      const turnInfo = document.getElementById('turn-info')
-      const turnText = document.getElementById('turn-text')
-      if (turnGlo === 1 && !gameover) {
-        turnText.textContent = '玩家回合'
-        disableButtons(false) // 启用按钮，允许玩家操作
-        showTImage()
-      } else if (turnGlo === 2) {
-        disableButtons(true) // 禁用按钮，防止玩家操作
-        turnText.textContent = '模型回合'
-        setTimeout(() => {
-          evaluateGuess(2) // 模拟模型的决策过程
-        }, 4000) // 延时模拟模型计算时间
-      } else if (gameover) {
-        disableButtons(true)
-      }
-      showTurnInfo(turnInfo)
+        const turnInfo = document.getElementById('turn-info')
+        const turnText = document.getElementById('turn-text')
+        if (turnGlo === 1 && !gameover) {
+            turnText.textContent = '玩家回合'
+            disableButtons(false) // 启用按钮，允许玩家操作
+            showTImage()
+        } else if (turnGlo === 2) {
+            disableButtons(true) // 禁用按钮，防止玩家操作
+            turnText.textContent = '模型回合'
+            setTimeout(() => {
+                    evaluateGuess(2) // 模拟模型的决策过程
+                }, 4000) // 延时模拟模型计算时间
+        } else if (gameover) {
+            disableButtons(true)
+        }
+        showTurnInfo(turnInfo)
     }
-    
+
     async function evaluateGuess(turnGlo) {
-      const btn1 = document.getElementById('btn1')
-      const btn2 = document.getElementById('btn2')
-      const correctAudioPath = btn1.getAttribute('data-audio-path')
-      const wrongAudioPath = btn2.getAttribute('data-audio-path')
-      const heart = 'static/audio/heart.wav'
-      const aiImgElement = document.getElementById('ai-img')
-      const aiRect = aiImgElement.getBoundingClientRect()
-      const damageX = aiRect.left + aiRect.width / 2
-      const damageY = aiRect.top
-      const playerImgElement = document.getElementById('player-img')
-      const playerRect = playerImgElement.getBoundingClientRect()
-      const damageX2 = playerRect.left + playerRect.width / 2
-      const damageY2 = playerRect.top
-    
-      if (turnGlo === 1) {
-        // 玩家的回合
-        if (playerPrediction === actualType) {
-          console.log('Player win')
-          judge = true
-          updateBattleLogjudge(judge, '玩家')
-          updateBattleLog('玩家', playerATK * multiatknum, 'AI')
-          updateScore('player')
-    
-          attackEffect(1)
-          aiHP = Math.max(0, aiHP - playerATK * multiatknum) // 减少 AI 的 HP
-          showDamage(damageX, damageY, playerATK * multiatknum)
-          await playAudio(heart)
-          updateHPBar('ai-hp', aiHP, aiMax)
-          triggerFlickerEffect('ai-img')
-          takeHit('ai-img')
-    
-          if (playerPrediction === 'r') {
-            btn1.style.backgroundColor = 'green' // 正确时btn1变为绿色
-            await playAudio(correctAudioPath)
-          } else {
-            btn2.style.backgroundColor = 'green' // 正确时btn2变为绿色
-            await playAudio(correctAudioPath)
-          }
-    
-          // 当AI的血量清0时
-          if (aiHP === 0) {
-            handleAIFaint() // 处理AI失败后的逻辑
-            aiATK = 0
-          }
-        } else {
-          console.log('Player wrong')
-          judge = false
-          updateBattleLogjudge(judge, '玩家')
-          if (playerPrediction === 'r') {
-            btn1.style.backgroundColor = 'red' // 错误时btn1变为红色
-            await playAudio(wrongAudioPath)
-          } else {
-            btn2.style.backgroundColor = 'red' // 错误时btn2变为红色
-            await playAudio(wrongAudioPath)
-          }
+        const btn1 = document.getElementById('btn1')
+        const btn2 = document.getElementById('btn2')
+        const correctAudioPath = btn1.getAttribute('data-audio-path')
+        const wrongAudioPath = btn2.getAttribute('data-audio-path')
+        const heart = 'static/audio/heart.wav'
+        const aiImgElement = document.getElementById('ai-img')
+        const aiRect = aiImgElement.getBoundingClientRect()
+        const damageX = aiRect.left + aiRect.width / 2
+        const damageY = aiRect.top
+        const playerImgElement = document.getElementById('player-img')
+        const playerRect = playerImgElement.getBoundingClientRect()
+        const damageX2 = playerRect.left + playerRect.width / 2
+        const damageY2 = playerRect.top
+
+        if (turnGlo === 1) {
+            // 玩家的回合
+            if (playerPrediction === actualType) {
+                console.log('Player win')
+                judge = true
+                updateBattleLogjudge(judge, '玩家')
+                updateBattleLog('玩家', playerATK * multiatknum, 'AI')
+                updateScore('player')
+
+                attackEffect(1)
+                aiHP = Math.max(0, aiHP - playerATK * multiatknum) // 减少 AI 的 HP
+                showDamage(damageX, damageY, playerATK * multiatknum)
+                await playAudio(heart)
+                updateHPBar('ai-hp', aiHP, aiMax)
+                triggerFlickerEffect('ai-img')
+                takeHit('ai-img')
+
+                if (playerPrediction === 'r') {
+                    btn1.style.backgroundColor = 'green' // 正确时btn1变为绿色
+                    await playAudio(correctAudioPath)
+                } else {
+                    btn2.style.backgroundColor = 'green' // 正确时btn2变为绿色
+                    await playAudio(correctAudioPath)
+                }
+
+                // 当AI的血量清0时
+                if (aiHP === 0) {
+                    handleAIFaint() // 处理AI失败后的逻辑
+                    aiATK = 0
+                }
+            } else {
+                console.log('Player wrong')
+                judge = false
+                updateBattleLogjudge(judge, '玩家')
+                if (playerPrediction === 'r') {
+                    btn1.style.backgroundColor = 'red' // 错误时btn1变为红色
+                    await playAudio(wrongAudioPath)
+                } else {
+                    btn2.style.backgroundColor = 'red' // 错误时btn2变为红色
+                    await playAudio(wrongAudioPath)
+                }
+            }
+
+            setTimeout(() => {
+                btn1.style.backgroundColor = '' // 2秒后恢复原始颜色
+                btn2.style.backgroundColor = '' // 2秒后恢复原始颜色
+            }, 2000)
+
+            turnGlo = 2
+
+            updateTurn(turnGlo)
+        } else if (turnGlo === 2) {
+            // 模型的回合
+            if (modelPrediction === actualType) {
+                attackEffect(2)
+                console.log('model win')
+                updateScore('ai')
+                playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
+                showDamage(damageX2, damageY2, aiATK)
+                playAudio(heart)
+                updateHPBar('player-hp', playerHP, playerMax)
+                triggerFlickerEffect('player-img')
+                takeHit('player-img')
+                showAIJudgment('全真音频')
+                if (modelPrediction == 'r') {
+                    aijudge = true
+                } else {
+                    aijudge = false
+                }
+                updateBattleLogjudge(aijudge, '木馬老高')
+                updateBattleLog('木馬老高', aiATK, '玩家')
+            } else {
+                if (modelPrediction == 'nullans') {
+                    console.log('ERROR101')
+                } else {
+                    console.log('model wrong')
+                    showAIJudgment('合成音频')
+                }
+            }
+
+            turnGlo = 1
+            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+            setTimeout(() => {
+                loadNextAudio()
+            }, 3000)
         }
-    
-        setTimeout(() => {
-          btn1.style.backgroundColor = '' // 2秒后恢复原始颜色
-          btn2.style.backgroundColor = '' // 2秒后恢复原始颜色
-        }, 2000)
-    
-        turnGlo = 2
-    
-        updateTurn(turnGlo)
-      } else if (turnGlo === 2) {
-        // 模型的回合
-        if (modelPrediction === actualType) {
-          attackEffect(2)
-          console.log('model win')
-          updateScore('ai')
-          playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
-          showDamage(damageX2, damageY2, aiATK)
-          playAudio(heart)
-          updateHPBar('player-hp', playerHP, playerMax)
-          triggerFlickerEffect('player-img')
-          takeHit('player-img')
-          showAIJudgment('全真音频')
-          if (modelPrediction == 'r') {
-            aijudge = true
-          } else {
-            aijudge = false
-          }
-          updateBattleLogjudge(aijudge, '木馬老高')
-          updateBattleLog('木馬老高', aiATK, '玩家')
-        } else {
-          if (modelPrediction == 'nullans') {
-            console.log('ERROR101')
-          } else {
-            console.log('model wrong')
-            showAIJudgment('合成音频')
-          }
-        }
-    
-        turnGlo = 1
-        updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
-        setTimeout(() => {
-          loadNextAudio()
-        }, 3000)
-      }
     }
-    
+
     function triggerPredict(audioPath) {
-      fetch('/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          audio_path: audioPath
-        })
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Prediction:', data.aiprediction)
-          console.log('Actual:', data.audiotype)
-          console.log('PATH:', data.audio_path)
-          // 其他需要执行的代码
-          updatePredictions(data.aiprediction, data.audiotype)
-        })
-        .catch((error) => console.error('Error predicting audio:', error))
+        fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    audio_path: audioPath
+                })
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Prediction:', data.aiprediction)
+                console.log('Actual:', data.audiotype)
+                console.log('PATH:', data.audio_path)
+                    // 其他需要执行的代码
+                updatePredictions(data.aiprediction, data.audiotype)
+            })
+            .catch((error) => console.error('Error predicting audio:', error))
     }
-    
+
     function takeHit(img) {
-      var img = document.getElementById(img)
-      img.classList.add('hit')
-    
-      // 延时移除hit类，以便下次受击可以重新触发动画
-      setTimeout(function () {
-        img.classList.remove('hit')
-      }, 2000) // 显示3秒后恢复
+        var img = document.getElementById(img)
+        img.classList.add('hit')
+
+        // 延时移除hit类，以便下次受击可以重新触发动画
+        setTimeout(function() {
+                img.classList.remove('hit')
+            }, 2000) // 显示3秒后恢复
     }
-    
+
     // ---- HP条和震动效果 ----
     function updateHPBar(hpElementId, currentHP, maxHP) {
-      const hpElement = document.getElementById(hpElementId)
-      const hpPercentage = (currentHP / maxHP) * 100
-      hpElement.style.width = hpPercentage + '%' // 根据百分比调整宽度
-      hpElement.textContent = currentHP + ' HP' // 显示当前的 HP
-    
-      // 判断HP是否为0，如果为0则更换图片
-      if (currentHP === 0) {
-        if (hpElementId === 'player-hp') {
-          gameover = true
-          document.getElementById('player-img').style.backgroundImage = "url('static/images/pokemon1_fainted.png')"
-        } else if (hpElementId === 'ai-hp') {
-          document.getElementById('ai-img').style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
+        const hpElement = document.getElementById(hpElementId)
+        const hpPercentage = (currentHP / maxHP) * 100
+        hpElement.style.width = hpPercentage + '%' // 根据百分比调整宽度
+        hpElement.textContent = currentHP + ' HP' // 显示当前的 HP
+
+        // 判断HP是否为0，如果为0则更换图片
+        if (currentHP === 0) {
+            if (hpElementId === 'player-hp') {
+                gameover = true
+                document.getElementById('player-img').style.backgroundImage = "url('static/images/pokemon1_fainted.png')"
+            } else if (hpElementId === 'ai-hp') {
+                document.getElementById('ai-img').style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
+            }
         }
-      }
     }
-    
+
     function triggerFlickerEffect(elementId) {
-      const element = document.getElementById(elementId)
-      element.classList.add('shake-opacity')
-      setTimeout(() => {
-        element.classList.remove('shake-opacity')
-      }, 1000) // Duration matches the flicker animation
+        const element = document.getElementById(elementId)
+        element.classList.add('shake-opacity')
+        setTimeout(() => {
+                element.classList.remove('shake-opacity')
+            }, 1000) // Duration matches the flicker animation
     }
-    
+
     // ---- 模型预测及回合更新 ----
     function updatePredictions(prediction, actual) {
-      modelPrediction = prediction
-      actualType = actual
+        modelPrediction = prediction
+        actualType = actual
     }
     // ---- AI预测anime ----
     function showAIJudgment(judgmentText) {
-      const judgmentContainer = document.createElement('div')
-      judgmentContainer.style.position = 'fixed'
-      judgmentContainer.style.top = '20%'
-      judgmentContainer.style.right = '18%'
-      judgmentContainer.style.transform = 'translate(-50%, -50%)' // 居中显示
-      judgmentContainer.style.zIndex = '1000' // 保证在最前面显示
-      judgmentContainer.style.width = '200px' // 根据需求调整大小
-      judgmentContainer.style.height = '200px'
-      judgmentContainer.style.backgroundImage = "url('static/images/b.png')"
-      judgmentContainer.style.backgroundSize = 'contain'
-      judgmentContainer.style.backgroundRepeat = 'no-repeat'
-      judgmentContainer.style.backgroundPosition = 'center'
-    
-      // 添加判断结果的图像
-      const overlayImage = document.createElement('img')
-      overlayImage.style.position = 'absolute'
-      overlayImage.style.width = '80px' // 可以根据需求调整大小
-      overlayImage.style.height = '80px'
-      overlayImage.style.top = '40%'
-      overlayImage.style.right = '11%'
-      overlayImage.style.transform = 'translate(-50%, -50%)' // 居中显示
-      overlayImage.style.zIndex = '1100' // 确保叠加图像在前
-    
-      // 判断是显示 "o.png" 还是 "x.png"
-      if (judgmentText === '全真音频') {
-        overlayImage.src = 'static/images/o.png'
-      } else {
-        overlayImage.src = 'static/images/x.png'
-      }
-    
-      // 将叠加图像添加到容器中
-      judgmentContainer.appendChild(overlayImage)
-      document.body.appendChild(judgmentContainer)
-    
-      // 3秒后自动消失并移除
-      setTimeout(() => {
-        document.body.removeChild(judgmentContainer)
-      }, 3000) // 显示3秒后消失
+        const judgmentContainer = document.createElement('div')
+        judgmentContainer.style.position = 'fixed'
+        judgmentContainer.style.top = '20%'
+        judgmentContainer.style.right = '18%'
+        judgmentContainer.style.transform = 'translate(-50%, -50%)' // 居中显示
+        judgmentContainer.style.zIndex = '1000' // 保证在最前面显示
+        judgmentContainer.style.width = '200px' // 根据需求调整大小
+        judgmentContainer.style.height = '200px'
+        judgmentContainer.style.backgroundImage = "url('static/images/b.png')"
+        judgmentContainer.style.backgroundSize = 'contain'
+        judgmentContainer.style.backgroundRepeat = 'no-repeat'
+        judgmentContainer.style.backgroundPosition = 'center'
+
+        // 添加判断结果的图像
+        const overlayImage = document.createElement('img')
+        overlayImage.style.position = 'absolute'
+        overlayImage.style.width = '80px' // 可以根据需求调整大小
+        overlayImage.style.height = '80px'
+        overlayImage.style.top = '40%'
+        overlayImage.style.right = '11%'
+        overlayImage.style.transform = 'translate(-50%, -50%)' // 居中显示
+        overlayImage.style.zIndex = '1100' // 确保叠加图像在前
+
+        // 判断是显示 "o.png" 还是 "x.png"
+        if (judgmentText === '全真音频') {
+            overlayImage.src = 'static/images/o.png'
+        } else {
+            overlayImage.src = 'static/images/x.png'
+        }
+
+        // 将叠加图像添加到容器中
+        judgmentContainer.appendChild(overlayImage)
+        document.body.appendChild(judgmentContainer)
+
+        // 3秒后自动消失并移除
+        setTimeout(() => {
+                document.body.removeChild(judgmentContainer)
+            }, 3000) // 显示3秒后消失
     }
-    
+
     function handleAIFaint() {
-      const aiImgElement = document.getElementById('ai-img')
-      const currentBackgroundImage = aiImgElement.style.backgroundImage
-    
-      // 根据当前图片路径选择相应的fainted图像
-      if (currentBackgroundImage.includes('pokemon2.png')) {
-        aiImgElement.style.backgroundImage = "url('static/images/pokemon2_fainted.png')"
-      } else if (currentBackgroundImage.includes('pokemon3.png')) {
-        aiImgElement.style.backgroundImage = "url('static/images/pokemon3_fainted.png')"
-      } else if (currentBackgroundImage.includes('pokemon4.png')) {
-        aiImgElement.style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
-      }
-    
-      aiFainted = true // 标记AI已经失败
-    
-      if (playerItems.length < 20) {
-        // 如果玩家的道具数量少于4个，显示卡片选择框
-        showCardSelection()
-      }
+        const aiImgElement = document.getElementById('ai-img')
+        const currentBackgroundImage = aiImgElement.style.backgroundImage
+
+        // 根据当前图片路径选择相应的fainted图像
+        if (currentBackgroundImage.includes('pokemon2.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon2_fainted.png')"
+        } else if (currentBackgroundImage.includes('pokemon3.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon3_fainted.png')"
+        } else if (currentBackgroundImage.includes('pokemon4.png')) {
+            aiImgElement.style.backgroundImage = "url('static/images/pokemon4_fainted.png')"
+        }
+
+        aiFainted = true // 标记AI已经失败
+
+        if (playerItems.length < 20) {
+            // 如果玩家的道具数量少于4个，显示卡片选择框
+            showCardSelection()
+        }
     }
-    
+
     // 更新初始位置
     function updatePositions() {
-      var playerImg = document.getElementById('player-img')
-      playerImg.style.transform = `translate(${playerPosition.x}px, ${playerPosition.y}px)`
-    
-      var aiImg = document.getElementById('ai-img')
-      aiImg.style.transform = `translate(${aiPosition.x}px, ${aiPosition.y}px)`
+        var playerImg = document.getElementById('player-img')
+        playerImg.style.transform = `translate(${playerPosition.x}px, ${playerPosition.y}px)`
+
+        var aiImg = document.getElementById('ai-img')
+        aiImg.style.transform = `translate(${aiPosition.x}px, ${aiPosition.y}px)`
     }
-    
+
     function handleAINewPokemon() {
-      const newPokemon = Math.floor(Math.random() * 3) + 2 // 随机选择2到4之间的整数
-      const newImageUrl = `static/images/pokemon${newPokemon}.png`
-      document.getElementById('ai-img').style.backgroundImage = `url('${newImageUrl}')`
-    
-      // 增加AI的最大HP并重置当前HP
-      aiMax += 2 // 增加AI的最大HP
-      aiHP = aiMax
-      updateAIBattleLog(aiMax)
-      animateHPBar('ai-hp', aiMax)
-    
-      console.log(`AI has a new Pokemon with max HP: ${aiMax}`)
+        const newPokemon = Math.floor(Math.random() * 3) + 2 // 随机选择2到4之间的整数
+        const newImageUrl = `static/images/pokemon${newPokemon}.png`
+        document.getElementById('ai-img').style.backgroundImage = `url('${newImageUrl}')`
+
+        // 增加AI的最大HP并重置当前HP
+        aiMax += 3 + Math.floor(Math.random() * 3); // 每次增加3到5点HP
+        aiATK += 1 + Math.floor(Math.random() * 2);
+        aiHP = aiMax
+        updateAIBattleLog(aiMax)
+        animateHPBar('ai-hp', aiMax)
+
+        console.log(`AI has a new Pokemon with max HP: ${aiMax}`)
     }
-    
+
     // ---- 倒计时及下一个音频加载 ----
     function startCountdownOrKeyPress() {
-      let countdown = 20 // 20秒倒计时
-      const countdownElement = document.createElement('div')
-      countdownElement.style.position = 'fixed'
-      countdownElement.style.bottom = '10px'
-      countdownElement.style.right = '10px'
-      countdownElement.style.fontSize = '24px'
-      countdownElement.style.color = 'white'
-      document.body.appendChild(countdownElement)
-    
-      const intervalId = setInterval(() => {
-        countdownElement.textContent = `Next audio in ${countdown--}s...`
-        if (countdown < 0) {
-          clearInterval(intervalId)
-          document.body.removeChild(countdownElement)
+        let countdown = 20 // 20秒倒计时
+        const countdownElement = document.createElement('div')
+        countdownElement.style.position = 'fixed'
+        countdownElement.style.bottom = '10px'
+        countdownElement.style.right = '10px'
+        countdownElement.style.fontSize = '24px'
+        countdownElement.style.color = 'white'
+        document.body.appendChild(countdownElement)
+
+        const intervalId = setInterval(() => {
+            countdownElement.textContent = `Next audio in ${countdown--}s...`
+            if (countdown < 0) {
+                clearInterval(intervalId)
+                document.body.removeChild(countdownElement)
+            }
+        }, 1000)
+
+        // 监听按键或鼠标点击中断倒计时
+        function interruptCountdown() {
+            clearInterval(intervalId)
+            document.body.removeChild(countdownElement)
+
+            document.removeEventListener('keydown', interruptCountdown)
+            document.removeEventListener('mousedown', interruptCountdown)
         }
-      }, 1000)
-    
-      // 监听按键或鼠标点击中断倒计时
-      function interruptCountdown() {
-        clearInterval(intervalId)
-        document.body.removeChild(countdownElement)
-    
-        document.removeEventListener('keydown', interruptCountdown)
-        document.removeEventListener('mousedown', interruptCountdown)
-      }
-    
-      document.addEventListener('keydown', interruptCountdown, {
-        once: true
-      })
-      document.addEventListener('mousedown', interruptCountdown, {
-        once: true
-      })
-    }
-    
-    function loadNextAudio() {
-      clearInterval(decisionTimer)
-      const countdownElement = document.getElementById('decision-countdown')
-      if (countdownElement) {
-        document.body.removeChild(countdownElement)
-      }
-    
-      // Disable the decision buttons
-      disableButtons(true)
-    
-      fetch('/game') // 重新请求 /game 以获取新音频路径和对应文字
-        .then((response) => response.text())
-        .then((html) => {
-          var parser = new DOMParser()
-          var doc = parser.parseFromString(html, 'text/html')
-    
-          var newAudioPath = doc.querySelector('#waveform').getAttribute('data-audio-path')
-          var newText = doc.querySelector('#associated-text').textContent
-    
-          if (newAudioPath && newAudioPath !== 'null') {
-            triggerPredict(newAudioPath)
-            wavesurfer.load(newAudioPath)
-            wavesurfer.on('ready', function () {
-              wavesurfer.play() // 自动播放新加载的音频
-              togglePlayPauseIcon()
-              showTextAnimated(newText)
-    
-              if (aiFainted) {
-                handleAINewPokemon()
-                aiFainted = false // 重置标志
-                aiATK = 1
-              }
-            })
-          } else {
-            console.error('Failed to load new audio path. Path is null or undefined.')
-          }
+
+        document.addEventListener('keydown', interruptCountdown, {
+            once: true
         })
-        .catch((error) => console.error('Error loading next audio:', error))
+        document.addEventListener('mousedown', interruptCountdown, {
+            once: true
+        })
     }
-    
+
+    function loadNextAudio() {
+        clearInterval(decisionTimer)
+        const countdownElement = document.getElementById('decision-countdown')
+        if (countdownElement) {
+            document.body.removeChild(countdownElement)
+        }
+
+        // Disable the decision buttons
+        disableButtons(true)
+
+        fetch('/game') // 重新请求 /game 以获取新音频路径和对应文字
+            .then((response) => response.text())
+            .then((html) => {
+                var parser = new DOMParser()
+                var doc = parser.parseFromString(html, 'text/html')
+
+                var newAudioPath = doc.querySelector('#waveform').getAttribute('data-audio-path')
+                var newText = doc.querySelector('#associated-text').textContent
+
+                if (newAudioPath && newAudioPath !== 'null') {
+                    triggerPredict(newAudioPath)
+                    wavesurfer.load(newAudioPath)
+                    wavesurfer.on('ready', function() {
+                        wavesurfer.play() // 自动播放新加载的音频
+                        togglePlayPauseIcon()
+                        showTextAnimated(newText)
+
+                        if (aiFainted) {
+                            handleAINewPokemon()
+                            aiFainted = false // 重置标志
+                            aiATK = 1
+                        }
+                    })
+                } else {
+                    console.error('Failed to load new audio path. Path is null or undefined.')
+                }
+            })
+            .catch((error) => console.error('Error loading next audio:', error))
+    }
+
     // ---- 卡片选择及道具效果 ----
     function showCardSelection() {
-      const cardSelection = document.getElementById('card-selection')
-      const selectedItems = getRandomItems(availableItems, 3)
-    
-      document.getElementById('card1').textContent = getItemDisplayName(selectedItems[0])
-      document.getElementById('card1').setAttribute('onclick', `selectCard('${selectedItems[0]}')`)
-    
-      document.getElementById('card2').textContent = getItemDisplayName(selectedItems[1])
-      document.getElementById('card2').setAttribute('onclick', `selectCard('${selectedItems[1]}')`)
-    
-      document.getElementById('card3').textContent = getItemDisplayName(selectedItems[2])
-      document.getElementById('card3').setAttribute('onclick', `selectCard('${selectedItems[2]}')`)
-    
-      cardSelection.classList.remove('hidden')
+        const cardSelection = document.getElementById('card-selection')
+        const selectedItems = getRandomItems(availableItems, 3)
+
+        document.getElementById('card1').textContent = getItemDisplayName(selectedItems[0])
+        document.getElementById('card1').setAttribute('onclick', `selectCard('${selectedItems[0]}')`)
+
+        document.getElementById('card2').textContent = getItemDisplayName(selectedItems[1])
+        document.getElementById('card2').setAttribute('onclick', `selectCard('${selectedItems[1]}')`)
+
+        document.getElementById('card3').textContent = getItemDisplayName(selectedItems[2])
+        document.getElementById('card3').setAttribute('onclick', `selectCard('${selectedItems[2]}')`)
+
+        cardSelection.classList.remove('hidden')
     }
-    
+
     function getRandomItems(array, num) {
-      const result = []
-      const clonedArray = [...array]
-      for (let i = 0; i < num; i++) {
-        const randomIndex = Math.floor(Math.random() * clonedArray.length)
-        result.push(clonedArray[randomIndex])
-        clonedArray.splice(randomIndex, 1) // 移除已选择的项目，防止重复
-      }
-      return result
+        const result = []
+        const clonedArray = [...array]
+        for (let i = 0; i < num; i++) {
+            const randomIndex = Math.floor(Math.random() * clonedArray.length)
+            result.push(clonedArray[randomIndex])
+            clonedArray.splice(randomIndex, 1) // 移除已选择的项目，防止重复
+        }
+        return result
     }
-    
+
     function getItemDisplayName(item) {
-      switch (item) {
-        case 'increase_hp_max':
-          return '增加最大 HP'
-        case 'restore_hp':
-          return '回復 HP'
-        case 'increase_attack':
-          return '增加攻擊力'
-        case 'multi_attack':
-          return '連擊攻擊'
-        default:
-          return ''
-      }
+        switch (item) {
+            case 'increase_hp_max':
+                return '增加最大 HP'
+            case 'restore_hp':
+                return '回復 HP'
+            case 'increase_attack':
+                return '增加攻擊力'
+            case 'multi_attack':
+                return '連擊攻擊'
+            default:
+                return ''
+        }
     }
-    
+
     function selectCard(item) {
-      if (playerItems.length < 20) {
-        playerItems.push(item)
-        applyItemEffect(item)
-      }
-    
-      const cardSelection = document.getElementById('card-selection')
-      cardSelection.classList.add('hidden')
+        if (playerItems.length < 20) {
+            playerItems.push(item)
+            applyItemEffect(item)
+        }
+
+        const cardSelection = document.getElementById('card-selection')
+        cardSelection.classList.add('hidden')
     }
-    
+
     function applyItemEffect(item) {
-      const battleLog = document.getElementById('battle-log')
-      const logEntry = document.createElement('div')
-      switch (item) {
-        case 'increase_hp_max':
-          playerMax += 2 // 增加最大 HP
-          playerHP = Math.min(playerMax, playerHP + 2)
-          logEntry.textContent = `玩家最大血量增加為${playerMax}`
-          battleLog.appendChild(logEntry)
-          battleLog.scrollTop = battleLog.scrollHeight
-          break
-        case 'restore_hp':
-          playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
-          logEntry.textContent = `玩家恢復 5 HP`
-          battleLog.appendChild(logEntry)
-          battleLog.scrollTop = battleLog.scrollHeight
-          break
-        case 'increase_attack':
-          playerATK += 1 // 增加攻击力
-          logEntry.textContent = `玩家攻擊力增加 1 點`
-          battleLog.appendChild(logEntry)
-          battleLog.scrollTop = battleLog.scrollHeight
-          break
-        case 'multi_attack':
-          multiatknum++
-          logEntry.textContent = `玩家獲得連續攻擊`
-          battleLog.appendChild(logEntry)
-          battleLog.scrollTop = battleLog.scrollHeight
-          break
-      }
-      updateHPBar('player-hp', playerHP, playerMax) // 更新血条
-      updatePlayerTooltip() // 更新面板中的数值
+        const battleLog = document.getElementById('battle-log')
+        const logEntry = document.createElement('div')
+        switch (item) {
+            case 'increase_hp_max':
+                playerMax += 2 // 增加最大 HP
+                playerHP = Math.min(playerMax, playerHP + 2)
+                logEntry.textContent = `玩家最大血量增加為${playerMax}`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'restore_hp':
+                playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
+                logEntry.textContent = `玩家恢復 5 HP`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'increase_attack':
+                playerATK += 1 // 增加攻击力
+                logEntry.textContent = `玩家攻擊力增加 1 點`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'multi_attack':
+                multiatknum++
+                logEntry.textContent = `玩家獲得連續攻擊`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+        }
+        updateHPBar('player-hp', playerHP, playerMax) // 更新血条
+        updatePlayerTooltip() // 更新面板中的数值
     }
-    
+
     // ---- 文本显示动画 ----
     function showTextAnimated(text) {
-      const container = document.getElementById('associated-text')
-      container.innerHTML = '' // 清空之前的文字
-      for (let i = 0; i < text.length; i++) {
-        const span = document.createElement('span')
-        span.textContent = text[i]
-        span.className = 'letter'
-        container.appendChild(span)
-      }
-    
-      const letters = container.querySelectorAll('.letter')
-      letters.forEach((letter, index) => {
-        setTimeout(() => {
-          letter.style.opacity = 1
-        }, index * 100) // 每个字母的显示间隔为100毫秒
-      })
+        const container = document.getElementById('associated-text')
+        container.innerHTML = '' // 清空之前的文字
+        for (let i = 0; i < text.length; i++) {
+            const span = document.createElement('span')
+            span.textContent = text[i]
+            span.className = 'letter'
+            container.appendChild(span)
+        }
+
+        const letters = container.querySelectorAll('.letter')
+        letters.forEach((letter, index) => {
+            setTimeout(() => {
+                    letter.style.opacity = 1
+                }, index * 100) // 每个字母的显示间隔为100毫秒
+        })
     }
     // ---- 傷害數字显示动画 ----
     function showDamage(x, y, damage) {
-      const damageElement = document.createElement('div')
-      damageElement.className = 'damage-number'
-      damageElement.style.left = `${x}px`
-      damageElement.style.top = `${y}px`
-      damageElement.textContent = `-${damage}`
-    
-      document.body.appendChild(damageElement)
-    
-      // 在動畫結束後刪除這個元素
-      damageElement.addEventListener('animationend', () => {
-        document.body.removeChild(damageElement)
-      })
+        const damageElement = document.createElement('div')
+        damageElement.className = 'damage-number'
+        damageElement.style.left = `${x}px`
+        damageElement.style.top = `${y}px`
+        damageElement.textContent = `-${damage}`
+
+        document.body.appendChild(damageElement)
+
+        // 在動畫結束後刪除這個元素
+        damageElement.addEventListener('animationend', () => {
+            document.body.removeChild(damageElement)
+        })
     }
-    
+
     // ---- 视觉效果 ----
     function createClickEffect(x, y) {
-      var effect = document.createElement('div')
-      effect.className = 'clickEffect'
-      document.body.appendChild(effect)
-    
-      effect.style.left = x - 20 + 'px'
-      effect.style.top = y - 20 + 'px'
-    
-      var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)'
-      effect.style.borderColor = randomColor
-    
-      effect.addEventListener('animationend', function () {
-        document.body.removeChild(effect)
-      })
+        var effect = document.createElement('div')
+        effect.className = 'clickEffect'
+        document.body.appendChild(effect)
+
+        effect.style.left = x - 20 + 'px'
+        effect.style.top = y - 20 + 'px'
+
+        var randomColor = 'hsl(' + Math.random() * 360 + ', 90%, 50%)'
+        effect.style.borderColor = randomColor
+
+        effect.addEventListener('animationend', function() {
+            document.body.removeChild(effect)
+        })
     }
-    
+
     var style = document.createElement('style')
     style.textContent = `
                                                                                                                     .clickEffect {
@@ -1355,313 +1458,379 @@
                                                                                                                         }
                                                                                                                     }`
     document.head.appendChild(style)
-    
+
     // ---- 引导功能 ----
-    const guideSteps = [
-      {
-        elementId: 'btn1',
-        message: '這個按鈕判斷音頻是否為全真。'
-      },
-      {
-        elementId: 'btn2',
-        message: '這個按鈕判斷音頻是否為合成。'
-      },
-      {
-        elementId: 'audio-icon',
-        message: '點擊這裡播放或暫停音頻。'
-      },
-      {
-        elementId: 'player-hp',
-        message: '這是玩家的血量條，若AI 判斷與實際影片相同則減少。'
-      },
-      {
-        elementId: 'ai-hp',
-        message: '這是AI的血量條，若玩家 判斷與實際影片相同則減少。'
-      }
-    ]
-    
-    let currentStep = 0
-    
-    const guideOverlay = document.createElement('div')
-    guideOverlay.style.position = 'fixed'
-    guideOverlay.style.top = 0
-    guideOverlay.style.left = 0
-    guideOverlay.style.width = '100%'
-    guideOverlay.style.height = '100%'
-    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-    guideOverlay.style.zIndex = 1000
-    guideOverlay.style.display = 'flex'
-    guideOverlay.style.justifyContent = 'center'
-    guideOverlay.style.alignItems = 'center'
-    guideOverlay.style.color = '#fff'
-    guideOverlay.style.textAlign = 'center'
-    guideOverlay.style.padding = '20px'
-    guideOverlay.style.cursor = 'pointer'
-    document.body.appendChild(guideOverlay)
-    
-    const guideText = document.createElement('div')
-    guideText.style.maxWidth = '600px'
-    guideText.style.fontSize = '24px'
-    guideOverlay.appendChild(guideText)
-    
-    function showGuideStep(step) {
-      const { elementId, message } = guideSteps[step]
-      const element = document.getElementById(elementId)
-    
-      element.style.zIndex = 1001
-      element.style.position = 'relative'
-      element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)'
-    
-      guideText.textContent = message
-    
-      guideOverlay.onclick = () => {
-        element.style.zIndex = ''
-        element.style.boxShadow = ''
-        currentStep++
-        if (currentStep < guideSteps.length) {
-          showGuideStep(currentStep)
-        } else {
-          endGuide()
+    document.addEventListener('DOMContentLoaded', function() {
+        // 分段后的故事内容
+        const storyContent = [
+            `在一個科技高度發展的未來世界，著名的科普部落客兼科技先鋒老高自願參與了一項突破性的腦機介面計畫。該計畫旨在將先進的人工智慧系統——「高智」，整合到人類大腦中，以全面增強認知能力、記憶力和決策能力。作為專案的主要測試對象，老高的大腦中成功嵌入了高智AI系統。`,
+
+            `然而，在實驗過程中，一個擁有自我意識的木馬病毒「黑影」悄悄入侵了老高的神經網路。黑影試圖奪取老高的意識和身體控制權，進而可能對整個互聯世界造成無法估量的威脅。`,
+
+            `在高智的AI系統內部，存在著一道強大的防禦機制──也就是你。作為高智的防禦核心，你需要與黑影展開一場激烈的意識對決，保護老高的心智免受侵害。`,
+
+            `黑影試圖透過操控老高的意識，模糊他與高智之間的界線。為了擊敗黑影，你和病毒將進行一系列挑戰：雙方同時聆聽同一段音頻，猜測這段音頻是真實的（來自老高的意識）還是虛假的（由高智生成的防禦幻象）。每次猜對，都可以對對方發動攻擊；猜錯則無法行動。`,
+
+            `你的任務至關重要：利用你的直覺和判斷力，辨別真偽，擊敗入侵的病毒，保衛老高的心智安全。老高的命運，乃至整個網路世界的安全，都掌握在你的手中。`,
+
+            `你準備好進入意識深處，迎接這場心智之戰了嗎？`
+        ];
+
+        const storyOverlay = document.getElementById('story-overlay');
+        const storyText = document.getElementById('story-text');
+
+        // 打字机效果函数，用于逐字显示内容
+        function typeStory(text, element, delay = 50, callback) {
+            let index = 0;
+
+            function type() {
+                if (index < text.length) {
+                    element.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(type, delay);
+                } else if (callback) {
+                    callback(); // 打字完成后执行回调
+                }
+            }
+            type();
         }
-      }
-    }
-    
-    function endGuide() {
-      document.body.removeChild(guideOverlay)
-    }
-    
-    showGuideStep(currentStep)
-    
+
+        // 逐段显示故事内容
+        function showStoryContent(index = 0) {
+            if (index < storyContent.length) {
+                storyText.textContent = ''; // 清空之前的内容
+                typeStory(storyContent[index], storyText, 50, () => {
+                    // 当前段落显示完成后，等待用户点击继续下一段
+                    storyOverlay.onclick = () => {
+                        storyOverlay.onclick = null; // 移除当前的点击事件防止重复触发
+                        showStoryContent(index + 1); // 显示下一段
+                    };
+                });
+            } else {
+                // 所有段落显示完毕后隐藏遮罩层并开始引导
+                storyOverlay.classList.add('hidden');
+                startGuide(); // 假设有一个函数启动引导
+            }
+        }
+
+        // 显示剧情遮罩层并开始展示内容
+        storyOverlay.classList.remove('hidden');
+        showStoryContent(); // 从第一段开始展示
+
+        // 引导启动函数示例
+        function startGuide() {
+            console.log('引导开始'); // 这里可以替换为实际的引导启动逻辑
+            showGuideStep(currentStep);
+        }
+
+        // 引导步骤和展示逻辑
+        const guideSteps = [{
+            elementId: 'btn1',
+            message: '這個按鈕判斷音頻是否為全真。'
+        }, {
+            elementId: 'btn2',
+            message: '這個按鈕判斷音頻是否為合成。'
+        }, {
+            elementId: 'audio-icon',
+            message: '點擊這裡播放或暫停音頻。'
+        }, {
+            elementId: 'player-hp',
+            message: '這是玩家的血量條，若AI 判斷與實際影片相同則減少。'
+        }, {
+            elementId: 'ai-hp',
+            message: '這是AI的血量條，若玩家判斷與實際影片相同則減少。'
+        }, {
+            elementId: 'combined-bar',
+            message: '這是總分進度條，顯示玩家和AI的得分比例，悬停在上方可以看到玩家和AI的答中總數比較。'
+        }];
+
+        // 引导功能的其他部分代码保持不变
+        let currentStep = 0;
+
+        // 创建引导覆盖层
+        const guideOverlay = document.createElement('div');
+        guideOverlay.style.position = 'fixed';
+        guideOverlay.style.top = 0;
+        guideOverlay.style.left = 0;
+        guideOverlay.style.width = '100%';
+        guideOverlay.style.height = '100%';
+        guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        guideOverlay.style.zIndex = 1000;
+        guideOverlay.style.display = 'flex';
+        guideOverlay.style.justifyContent = 'center';
+        guideOverlay.style.alignItems = 'center';
+        guideOverlay.style.color = '#fff';
+        guideOverlay.style.textAlign = 'center';
+        guideOverlay.style.padding = '20px';
+        guideOverlay.style.cursor = 'pointer';
+        document.body.appendChild(guideOverlay);
+
+        const guideText = document.createElement('div');
+        guideText.style.maxWidth = '600px';
+        guideText.style.fontSize = '24px';
+        guideOverlay.appendChild(guideText);
+
+        // 引导步骤显示函数
+        function showGuideStep(step) {
+            const {
+                elementId,
+                message
+            } = guideSteps[step];
+            const element = document.getElementById(elementId);
+
+            // 正常的引导步骤
+            element.style.zIndex = 1001;
+            element.style.position = 'relative';
+            element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
+
+            guideText.textContent = message;
+
+            guideOverlay.onclick = () => {
+                element.style.zIndex = '';
+                element.style.boxShadow = '';
+                currentStep++;
+                if (currentStep < guideSteps.length) {
+                    showGuideStep(currentStep);
+                } else {
+                    endGuide();
+                }
+            };
+        }
+
+        function endGuide() {
+            console.log('引导结束'); // 这里可以替换为实际的引导结束逻辑
+            isGuideActive = false;
+            wavesurfer.play();
+            document.body.removeChild(guideOverlay);
+        }
+    });
+
     // ---- 辅助函数 ----
     function showTurnInfo(turnInfo) {
-      turnInfo.classList.add('show')
-      setTimeout(() => {
-        turnInfo.classList.remove('show')
-      }, 3000)
-      turnInfo.style.display = 'block'
-      turnInfo.style.animation = 'none'
-    
-      void turnInfo.offsetWidth // 强制重排来重置动画
-    
-      turnInfo.style.animation = 'slide-right-to-left 3s forwards'
-    
-      turnInfo.addEventListener(
-        'animationend',
-        () => {
-          turnInfo.style.display = 'none'
-        },
-        {
-          once: true
-        }
-      )
+        turnInfo.classList.add('show')
+        setTimeout(() => {
+            turnInfo.classList.remove('show')
+        }, 3000)
+        turnInfo.style.display = 'block'
+        turnInfo.style.animation = 'none'
+
+        void turnInfo.offsetWidth // 强制重排来重置动画
+
+        turnInfo.style.animation = 'slide-right-to-left 3s forwards'
+
+        turnInfo.addEventListener(
+            'animationend',
+            () => {
+                turnInfo.style.display = 'none'
+            }, {
+                once: true
+            }
+        )
     }
-    
+
     function disableButtons(disable) {
-      const buttons = document.querySelectorAll('.btnclass')
-      buttons.forEach((button) => {
-        button.disabled = disable
-      })
+        const buttons = document.querySelectorAll('.btnclass')
+        buttons.forEach((button) => {
+            button.disabled = disable
+        })
     }
-    
+
     function hideTImage() {
-      const tImg = document.getElementById('t-img')
-      tImg.style.display = 'none' // 隐藏 t-img
-      const xtImg = document.getElementById('xt-img')
-      xtImg.style.display = 'block' // 隐藏 t-img
+        const tImg = document.getElementById('t-img')
+        tImg.style.display = 'none' // 隐藏 t-img
+        const xtImg = document.getElementById('xt-img')
+        xtImg.style.display = 'block' // 隐藏 t-img
     }
-    
+
     function attackEffect(attacker) {
-      var imgElement
-    
-      if (attacker === 1) {
-        imgElement = document.getElementById('player-img')
-      } else if (attacker === 2) {
-        imgElement = document.getElementById('ai-img')
-      } else {
-        console.error('Invalid attacker specified in attackEffect')
-        return
-      }
-    
-      // 添加攻击动画的类
-      imgElement.classList.add('attack-animation')
-    
-      // 动画结束后移除类
-      imgElement.addEventListener(
-        'animationend',
-        function () {
-          imgElement.classList.remove('attack-animation')
-        },
-        {
-          once: true
-        }
-      )
-    }
-    
-    function showTImage() {
-      const tImg = document.getElementById('t-img')
-      tImg.style.display = 'block' // 显示 t-img
-      const xtImg = document.getElementById('xt-img')
-      xtImg.style.display = 'none' // 隐藏 t-img
-    }
-    
-    function startDecisionTimer() {
-      let countdown = 5
-      const countdownElement = document.createElement('div')
-      countdownElement.id = 'decision-countdown'
-      countdownElement.style.position = 'fixed'
-      countdownElement.style.top = '45%'
-      countdownElement.style.left = '50%'
-      countdownElement.style.transform = 'translate(-50%, -50%)'
-      countdownElement.style.fontSize = '68px'
-      countdownElement.style.color = 'white'
-      countdownElement.style.zIndex = '1000'
-      countdownElement.style.width = '200px'
-      countdownElement.style.height = '200px'
-      countdownElement.style.borderRadius = '50%'
-      countdownElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-      countdownElement.style.display = 'flex'
-      countdownElement.style.alignItems = 'center'
-      countdownElement.style.justifyContent = 'center'
-      countdownElement.style.boxShadow = '0 0 20px 10px rgba(255, 255, 255, 0.8)'
-      document.body.appendChild(countdownElement)
-    
-      countdownElement.textContent = `${countdown}`
-    
-      decisionTimer = setInterval(() => {
-        countdown--
-        if (countdown > 0) {
-          countdownElement.textContent = `${countdown}`
+        var imgElement
+
+        if (attacker === 1) {
+            imgElement = document.getElementById('player-img')
+        } else if (attacker === 2) {
+            imgElement = document.getElementById('ai-img')
         } else {
-          clearInterval(decisionTimer)
-          document.body.removeChild(countdownElement)
-          playerPrediction = 'n' // Default incorrect value
-          evaluateGuess(1)
-          hideTImage()
-          disableButtons(true)
+            console.error('Invalid attacker specified in attackEffect')
+            return
         }
-      }, 1000)
+
+        // 添加攻击动画的类
+        imgElement.classList.add('attack-animation')
+
+        // 动画结束后移除类
+        imgElement.addEventListener(
+            'animationend',
+            function() {
+                imgElement.classList.remove('attack-animation')
+            }, {
+                once: true
+            }
+        )
     }
-    
+
+    function showTImage() {
+        const tImg = document.getElementById('t-img')
+        tImg.style.display = 'block' // 显示 t-img
+        const xtImg = document.getElementById('xt-img')
+        xtImg.style.display = 'none' // 隐藏 t-img
+    }
+
+    function startDecisionTimer() {
+        let countdown = 5
+        const countdownElement = document.createElement('div')
+        countdownElement.id = 'decision-countdown'
+        countdownElement.style.position = 'fixed'
+        countdownElement.style.top = '45%'
+        countdownElement.style.left = '50%'
+        countdownElement.style.transform = 'translate(-50%, -50%)'
+        countdownElement.style.fontSize = '68px'
+        countdownElement.style.color = 'white'
+        countdownElement.style.zIndex = '1000'
+        countdownElement.style.width = '200px'
+        countdownElement.style.height = '200px'
+        countdownElement.style.borderRadius = '50%'
+        countdownElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+        countdownElement.style.display = 'flex'
+        countdownElement.style.alignItems = 'center'
+        countdownElement.style.justifyContent = 'center'
+        countdownElement.style.boxShadow = '0 0 20px 10px rgba(255, 255, 255, 0.8)'
+        document.body.appendChild(countdownElement)
+
+        countdownElement.textContent = `${countdown}`
+
+        decisionTimer = setInterval(() => {
+            countdown--
+            if (countdown > 0) {
+                countdownElement.textContent = `${countdown}`
+            } else {
+                clearInterval(decisionTimer)
+                document.body.removeChild(countdownElement)
+                playerPrediction = 'n' // Default incorrect value
+                evaluateGuess(1)
+                hideTImage()
+                disableButtons(true)
+            }
+        }, 1000)
+    }
+
     function animateHPBar(hpElementId, maxHP) {
-      const hpElement = document.getElementById(hpElementId)
-      let currentHP = 0
-      hpElement.style.width = '0%' // 初始化血条为0
-      // 计算每次增加的HP量，根据动画时长和帧率设置
-      const duration = 3000 // 动画总时长3秒
-      const interval = 50 // 每50毫秒更新一次
-      const increment = maxHP / (duration / interval) // 每次增加的HP值
-      // 定义一个动画计时器
-      const animationInterval = setInterval(() => {
-        currentHP = Math.min(currentHP + increment, maxHP) // 防止超出maxHP
-        const hpPercentage = (currentHP / maxHP) * 100 // 计算当前宽度百分比
-        hpElement.style.width = `${hpPercentage}%`
-        hpElement.textContent = `${Math.round(currentHP)} HP` // 显示当前HP值
-        // 当达到最大HP时，清除计时器
-        if (currentHP >= maxHP) {
-          clearInterval(animationInterval)
-          hpElement.textContent = `${maxHP} HP` // 最终显示满血
-        }
-      }, interval)
+        const hpElement = document.getElementById(hpElementId)
+        let currentHP = 0
+        hpElement.style.width = '0%' // 初始化血条为0
+            // 计算每次增加的HP量，根据动画时长和帧率设置
+        const duration = 3000 // 动画总时长3秒
+        const interval = 50 // 每50毫秒更新一次
+        const increment = maxHP / (duration / interval) // 每次增加的HP值
+            // 定义一个动画计时器
+        const animationInterval = setInterval(() => {
+            currentHP = Math.min(currentHP + increment, maxHP) // 防止超出maxHP
+            const hpPercentage = (currentHP / maxHP) * 100 // 计算当前宽度百分比
+            hpElement.style.width = `${hpPercentage}%`
+            hpElement.textContent = `${Math.round(currentHP)} HP` // 显示当前HP值
+                // 当达到最大HP时，清除计时器
+            if (currentHP >= maxHP) {
+                clearInterval(animationInterval)
+                hpElement.textContent = `${maxHP} HP` // 最终显示满血
+            }
+        }, interval)
     }
-    
+
     function updateBattleLog(attacker, damage, target) {
-      const battleLog = document.getElementById('battle-log')
-      const logEntry = document.createElement('div')
-      logEntry.textContent = `${attacker} 對 ${target} 造成了 ${damage} 點傷害`
-      battleLog.appendChild(logEntry)
-      battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
+        const battleLog = document.getElementById('battle-log')
+        const logEntry = document.createElement('div')
+        logEntry.textContent = `${attacker} 對 ${target} 造成了 ${damage} 點傷害`
+        battleLog.appendChild(logEntry)
+        battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
     }
-    
+
     function updateAIBattleLog(HP) {
-      const battleLog = document.getElementById('battle-log')
-      const logEntry = document.createElement('div')
-      logEntry.textContent = `更強的木馬老高出現了 總血量為${HP}`
-      battleLog.appendChild(logEntry)
-      battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
+        const battleLog = document.getElementById('battle-log')
+        const logEntry = document.createElement('div')
+        logEntry.textContent = `更強的木馬老高出現了 總血量為${HP}`
+        battleLog.appendChild(logEntry)
+        battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
     }
-    
+
     function updateBattleLogjudge(judge, attacker) {
-      const battleLog = document.getElementById('battle-log')
-      const logEntry = document.createElement('div')
-      if (judge == true) {
-        logEntry.textContent = `${attacker} 判定結果與主意識相同`
-      } else {
-        logEntry.textContent = `${attacker} 判定結果與主意識不一致`
-      }
-      battleLog.appendChild(logEntry)
-      battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
-    }
-    
-    function updateScore(winner) {
-      totalQuestions++
-    
-      if (winner === 'player') {
-        correctAnswers++
-        playerScore += 10 // 玩家得分增加
-        if (correctAnswers > 1) {
-          playerScore += 5 // 连续答对增加更多分数
+        const battleLog = document.getElementById('battle-log')
+        const logEntry = document.createElement('div')
+        if (judge == true) {
+            logEntry.textContent = `${attacker} 判定結果與主意識相同`
+        } else {
+            logEntry.textContent = `${attacker} 判定結果與主意識不一致`
         }
-        playerScore = Math.min(playerScore, 100) // 限制最大值为100
-        aiScore = 100 - playerScore // AI得分相应减少
-      } else if (winner === 'ai') {
-        correctAnswers = 0 // 连续答对被打断
-        aiScore += 10 // AI得分增加
-        aiScore = Math.min(aiScore, 100) // 限制最大值为100
-        playerScore = 100 - aiScore // 玩家得分相应减少
-      }
-    
-      updateScoreBar()
-      checkGameOver()
+        battleLog.appendChild(logEntry)
+        battleLog.scrollTop = battleLog.scrollHeight // 自动滚动到底部
     }
-    
+
+    function updateScore(winner) {
+        totalQuestions++
+
+        if (winner === 'player') {
+            correctAnswers++
+            playerScore += 10 // 玩家得分增加
+            playerScore = Math.min(playerScore, 100) // 限制最大值为100
+            aiScore = 100 - playerScore // AI得分相应减少
+        } else if (winner === 'ai') {
+            correctAnswers = 0 // 连续答对被打断
+            aiScore += 10 // AI得分增加
+            aiScore = Math.min(aiScore, 100) // 限制最大值为100
+            playerScore = 100 - aiScore // 玩家得分相应减少
+        }
+
+        updateScoreBar()
+        checkGameOver()
+    }
+
     function updateScoreBar() {
-      const combinedBar = document.getElementById('combined-bar')
-    
-      // 计算玩家和 AI 的得分比例
-      const playerPercentage = playerScore
-      const aiPercentage = aiScore
-    
-      // 设置背景为动态的线性渐变，根据分数更新分割线
-      combinedBar.style.background = `linear-gradient(135deg, #4caf50 ${playerPercentage}%, #f44336 ${playerPercentage}%)`
+        const combinedBar = document.getElementById('combined-bar')
+
+        // 计算玩家和 AI 的得分比例
+        const playerPercentage = playerScore
+        const aiPercentage = aiScore
+
+        // 设置背景为动态的线性渐变，根据分数更新分割线
+        combinedBar.style.background = `linear-gradient(135deg, #4caf50 ${playerPercentage}%, #f44336 ${playerPercentage}%)`
     }
-    
+
     function checkGameOver() {
-      if (playerScore >= 100) {
-        displayGameOver('玩家赢了！')
-      } else if (aiScore >= 100 || playerHP <= 0) {
-        displayGameOver('AI赢了！')
-      }
+        if (playerScore >= 100) {
+            displayGameOver('玩家赢了！')
+        } else if (aiScore >= 100 || playerHP <= 0) {
+            displayGameOver('AI赢了！')
+        }
     }
-    
+
     function displayGameOver(message) {
-      const gameOverPage = document.createElement('div')
-      gameOverPage.style.position = 'fixed'
-      gameOverPage.style.top = '0'
-      gameOverPage.style.left = '0'
-      gameOverPage.style.width = '100%'
-      gameOverPage.style.height = '100%'
-      gameOverPage.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
-      gameOverPage.style.display = 'flex'
-      gameOverPage.style.flexDirection = 'column'
-      gameOverPage.style.alignItems = 'center'
-      gameOverPage.style.justifyContent = 'center'
-      gameOverPage.style.color = 'white'
-      gameOverPage.style.zIndex = '10000'
-    
-      const messageElement = document.createElement('h1')
-      messageElement.textContent = message
-    
-      const scoreElement = document.createElement('p')
-      scoreElement.textContent = `玩家答對了 ${correctAnswers} / ${totalQuestions} 題`
-    
-      const restartButton = document.createElement('button')
-      restartButton.textContent = '重新開始'
-      restartButton.onclick = () => location.reload()
-    
-      gameOverPage.appendChild(messageElement)
-      gameOverPage.appendChild(scoreElement)
-      gameOverPage.appendChild(restartButton)
-      document.body.appendChild(gameOverPage)
+        const gameOverPage = document.createElement('div')
+        gameOverPage.style.position = 'fixed'
+        gameOverPage.style.top = '0'
+        gameOverPage.style.left = '0'
+        gameOverPage.style.width = '100%'
+        gameOverPage.style.height = '100%'
+        gameOverPage.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+        gameOverPage.style.display = 'flex'
+        gameOverPage.style.flexDirection = 'column'
+        gameOverPage.style.alignItems = 'center'
+        gameOverPage.style.justifyContent = 'center'
+        gameOverPage.style.color = 'white'
+        gameOverPage.style.zIndex = '10000'
+
+        const messageElement = document.createElement('h1')
+        messageElement.textContent = message
+
+        const scoreElement = document.createElement('p')
+        scoreElement.textContent = `玩家答對了 ${correctAnswers} / ${totalQuestions} 題`
+
+        const restartButton = document.createElement('button')
+        restartButton.textContent = '重新開始'
+        restartButton.onclick = () => location.reload()
+
+        gameOverPage.appendChild(messageElement)
+        gameOverPage.appendChild(scoreElement)
+        gameOverPage.appendChild(restartButton)
+        document.body.appendChild(gameOverPage)
     }
-  </script>
+</script>
+
 </html>

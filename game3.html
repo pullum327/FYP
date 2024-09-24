@@ -540,36 +540,43 @@
         .battle-log {
             flex: 1;
             margin: 0 20px;
-            background-color: rgba(128, 128, 128, 0.5); /* 半透明的灰色背景 */
+            background-color: rgba(128, 128, 128, 0.5);
+            /* 半透明的灰色背景 */
             color: white;
             padding: 10px 20px;
             border-radius: 10px;
             text-align: center;
             font-size: 24px;
             height: auto;
-            overflow-y: overlay; /* 隐藏溢出内容，移除滚动条 */
-            min-height: 250px; /* 根据需要调整最大高度 */
-            max-height: 250px; /* 根据需要调整最大高度 */
-            max-width: 600px; /* 根据需要调整最大高度 */
-            max-width: 600px; /* 根据需要调整最大高度 */
+            overflow-y: overlay;
+            /* 隐藏溢出内容，移除滚动条 */
+            min-height: 250px;
+            /* 根据需要调整最大高度 */
+            max-height: 250px;
+            /* 根据需要调整最大高度 */
+            max-width: 600px;
+            /* 根据需要调整最大高度 */
+            max-width: 600px;
+            /* 根据需要调整最大高度 */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-            border: 1px solid black; /* 添加黑色边框 */
-            &::-webkit-scrollbar{
-                width:7px;
+            border: 1px solid black;
+            /* 添加黑色边框 */
+            &::-webkit-scrollbar {
+                width: 7px;
             }
-            &::-webkit-scrollbar-button{
+            &::-webkit-scrollbar-button {
                 background: transparent;
                 border-radius: 4px;
             }
-            &::-webkit-scrollbar-track-piece{
+            &::-webkit-scrollbar-track-piece {
                 background: transparent;
             }
-            &::-webkit-scrollbar-thumb{
-                border-radius:4px;
-                background-color: rgba(0,0,0,0.4);
-                border:1px solid slategrey;
+            &::-webkit-scrollbar-thumb {
+                border-radius: 4px;
+                background-color: rgba(0, 0, 0, 0.4);
+                border: 1px solid slategrey;
             }
-            &::-webkit-scrollbar-track{
+            &::-webkit-scrollbar-track {
                 box-shadow: transparent;
             }
         }
@@ -628,17 +635,75 @@
             transition: background 0.3s ease-in-out;
             /* 平滑背景变化 */
         }
+        /* 添加 CSS 样式来设置 Tooltip 的位置和显示效果 */
+        /* CSS 样式定义 Tooltip */
+        
+        .score-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+            display: none;
+            /* 初始隐藏 */
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            /* 使 Tooltip 不影响鼠标事件 */
+        }
+        
+        .story-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: #fff;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .story-text {
+            max-width: 800px;
+            font-size: 40px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
 </head>
 
 <body>
+    <div id="story-overlay" class="story-overlay">
+        <div id="story-text" class="story-text"></div>
+    </div>
     <div class="header">
         <div class="audio">
             <div id="audio-icon" class="play-icon"></div>
         </div>
         <div class="combined-scoreboard" id="combined-bar"></div>
-        <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
+        <div id="score-tooltip" class="score-tooltip hidden">
+            玩家答对: <span id="player-correct">0</span> 题
+            <br> AI答对: <span id="ai-correct">0</span> 题
+        </div>
     </div>
     </div>
     <div id="turn-info" class="turn-info">
@@ -726,6 +791,7 @@
     let aiScore = 50;
     let correctAnswers = 0; // 玩家答对题数
     let totalQuestions = 0; // 总题数
+    let isGuideActive = true;
     // 定义玩家和 AI 的位置
     var playerPosition = {
         x: 10,
@@ -751,6 +817,33 @@
         playerMaxHealth.textContent = playerMax
         playerMultiAttackValue.textContent = multiatknum
     }
+
+    const combinedBar = document.getElementById('combined-bar');
+    const scoreTooltip = document.getElementById('score-tooltip');
+    const playerCorrectDisplay = document.getElementById('player-correct');
+    const aiCorrectDisplay = document.getElementById('ai-correct');
+
+    // 监听 combined-bar 的鼠标进入事件，显示 Tooltip
+    combinedBar.addEventListener('mouseenter', function(event) {
+        // 更新 Tooltip 的内容
+        playerCorrectDisplay.textContent = correctAnswers;
+        aiCorrectDisplay.textContent = totalQuestions - correctAnswers;
+
+        // 获取 combined-bar 的位置
+        const rect = combinedBar.getBoundingClientRect();
+
+        // 设置 Tooltip 的位置在 combined-bar 上方居中
+        scoreTooltip.style.top = `${rect.top - scoreTooltip.offsetHeight - 10}px`; // 上方显示并与 bar 保持 10px 距离
+        scoreTooltip.style.left = `${rect.left + rect.width / 2 - scoreTooltip.offsetWidth / 2}px`; // 居中显示
+
+        // 显示 Tooltip
+        scoreTooltip.style.display = 'block';
+    });
+
+    // 监听 combined-bar 的鼠标离开事件，隐藏 Tooltip
+    combinedBar.addEventListener('mouseleave', function() {
+        scoreTooltip.style.display = 'none';
+    });
 
     // 初次调用，确保数值正确
     updatePlayerTooltip()
@@ -788,11 +881,14 @@
     // 加载音频并在页面加载时自动播放
     wavesurfer.load(audioPath)
     wavesurfer.on('ready', function() {
-            wavesurfer.play()
             togglePlayPauseIcon()
-            const initialText = document.querySelector('#associated-text').textContent
-            if (initialText) {
-                showTextAnimated(initialText)
+            if (!isGuideActive) {
+                wavesurfer.play()
+                togglePlayPauseIcon()
+                const initialText = document.querySelector('#associated-text').textContent
+                if (initialText) {
+                    showTextAnimated(initialText)
+                }
             }
         })
         // When audio finishes, enable buttons and start the 5-second timer
@@ -1171,9 +1267,13 @@
                     triggerPredict(newAudioPath)
                     wavesurfer.load(newAudioPath)
                     wavesurfer.on('ready', function() {
-                        wavesurfer.play() // 自动播放新加载的音频
-                        togglePlayPauseIcon()
-                        showTextAnimated(newText)
+
+                        if (!isGuideActive) {
+                            wavesurfer.play(); // 自动播放新加载的音频
+                            togglePlayPauseIcon(); // 更新播放/暂停图标状态
+                            showTextAnimated(newText)
+                        }
+
 
                         if (aiFainted) {
                             handleAINewPokemon()
@@ -1245,35 +1345,35 @@
         const battleLog = document.getElementById('battle-log')
         const logEntry = document.createElement('div')
         switch (item) {
-          case 'increase_hp_max':
-            playerMax += 2 // 增加最大 HP
-            playerHP = Math.min(playerMax, playerHP + 2)
-            logEntry.textContent = `玩家最大血量增加為${playerMax}`
-            battleLog.appendChild(logEntry)
-            battleLog.scrollTop = battleLog.scrollHeight
-            break
-          case 'restore_hp':
-            playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
-            logEntry.textContent = `玩家恢復 5 HP`
-            battleLog.appendChild(logEntry)
-            battleLog.scrollTop = battleLog.scrollHeight
-            break
-          case 'increase_attack':
-            playerATK += 1 // 增加攻击力
-            logEntry.textContent = `玩家攻擊力增加 1 點`
-            battleLog.appendChild(logEntry)
-            battleLog.scrollTop = battleLog.scrollHeight
-            break
-          case 'multi_attack':
-            multiatknum++
-            logEntry.textContent = `玩家獲得連續攻擊`
-            battleLog.appendChild(logEntry)
-            battleLog.scrollTop = battleLog.scrollHeight
-            break
+            case 'increase_hp_max':
+                playerMax += 2 // 增加最大 HP
+                playerHP = Math.min(playerMax, playerHP + 2)
+                logEntry.textContent = `玩家最大血量增加為${playerMax}`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'restore_hp':
+                playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
+                logEntry.textContent = `玩家恢復 5 HP`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'increase_attack':
+                playerATK += 1 // 增加攻击力
+                logEntry.textContent = `玩家攻擊力增加 1 點`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
+            case 'multi_attack':
+                multiatknum++
+                logEntry.textContent = `玩家獲得連續攻擊`
+                battleLog.appendChild(logEntry)
+                battleLog.scrollTop = battleLog.scrollHeight
+                break
         }
         updateHPBar('player-hp', playerHP, playerMax) // 更新血条
         updatePlayerTooltip() // 更新面板中的数值
-      }
+    }
 
     // ---- 文本显示动画 ----
     function showTextAnimated(text) {
@@ -1350,78 +1450,152 @@
                                                                                                                 }`
     document.head.appendChild(style)
 
+
     // ---- 引导功能 ----
-    const guideSteps = [{
-        elementId: 'btn1',
-        message: '這個按鈕判斷音頻是否為全真。'
-    }, {
-        elementId: 'btn2',
-        message: '這個按鈕判斷音頻是否為合成。'
-    }, {
-        elementId: 'audio-icon',
-        message: '點擊這裡播放或暫停音頻。'
-    }, {
-        elementId: 'player-hp',
-        message: '這是玩家的血量條，若AI 判斷與實際影片相同則減少。'
-    }, {
-        elementId: 'ai-hp',
-        message: '這是AI的血量條，若玩家 判斷與實際影片相同則減少。'
-    }]
+    document.addEventListener('DOMContentLoaded', function() {
+        // 分段后的故事内容
+        const storyContent = [
+            `在一個科技高度發展的未來世界，著名的科普部落客兼科技先鋒老高自願參與了一項突破性的腦機介面計畫。該計畫旨在將先進的人工智慧系統——「高智」，整合到人類大腦中，以全面增強認知能力、記憶力和決策能力。作為專案的主要測試對象，老高的大腦中成功嵌入了高智AI系統。`,
 
-    let currentStep = 0
+            `然而，在實驗過程中，一個擁有自我意識的木馬病毒「黑影」悄悄入侵了老高的神經網路。黑影試圖奪取老高的意識和身體控制權，進而可能對整個互聯世界造成無法估量的威脅。`,
 
-    const guideOverlay = document.createElement('div')
-    guideOverlay.style.position = 'fixed'
-    guideOverlay.style.top = 0
-    guideOverlay.style.left = 0
-    guideOverlay.style.width = '100%'
-    guideOverlay.style.height = '100%'
-    guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-    guideOverlay.style.zIndex = 1000
-    guideOverlay.style.display = 'flex'
-    guideOverlay.style.justifyContent = 'center'
-    guideOverlay.style.alignItems = 'center'
-    guideOverlay.style.color = '#fff'
-    guideOverlay.style.textAlign = 'center'
-    guideOverlay.style.padding = '20px'
-    guideOverlay.style.cursor = 'pointer'
-    document.body.appendChild(guideOverlay)
+            `在高智的AI系統內部，存在著一道強大的防禦機制──也就是你。作為高智的防禦核心，你需要與黑影展開一場激烈的意識對決，保護老高的心智免受侵害。`,
 
-    const guideText = document.createElement('div')
-    guideText.style.maxWidth = '600px'
-    guideText.style.fontSize = '24px'
-    guideOverlay.appendChild(guideText)
+            `黑影試圖透過操控老高的意識，模糊他與高智之間的界線。為了擊敗黑影，你和病毒將進行一系列挑戰：雙方同時聆聽同一段音頻，猜測這段音頻是真實的（來自老高的意識）還是虛假的（由高智生成的防禦幻象）。每次猜對，都可以對對方發動攻擊；猜錯則無法行動。`,
 
-    function showGuideStep(step) {
-        const {
-            elementId,
-            message
-        } = guideSteps[step]
-        const element = document.getElementById(elementId)
+            `你的任務至關重要：利用你的直覺和判斷力，辨別真偽，擊敗入侵的病毒，保衛老高的心智安全。老高的命運，乃至整個網路世界的安全，都掌握在你的手中。`,
 
-        element.style.zIndex = 1001
-        element.style.position = 'relative'
-        element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)'
+            `你準備好進入意識深處，迎接這場心智之戰了嗎？`
+        ];
 
-        guideText.textContent = message
+        const storyOverlay = document.getElementById('story-overlay');
+        const storyText = document.getElementById('story-text');
 
-        guideOverlay.onclick = () => {
-            element.style.zIndex = ''
-            element.style.boxShadow = ''
-            currentStep++
-            if (currentStep < guideSteps.length) {
-                showGuideStep(currentStep)
+        // 打字机效果函数，用于逐字显示内容
+        function typeStory(text, element, delay = 50, callback) {
+            let index = 0;
+
+            function type() {
+                if (index < text.length) {
+                    element.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(type, delay);
+                } else if (callback) {
+                    callback(); // 打字完成后执行回调
+                }
+            }
+            type();
+        }
+
+        // 逐段显示故事内容
+        function showStoryContent(index = 0) {
+            if (index < storyContent.length) {
+                storyText.textContent = ''; // 清空之前的内容
+                typeStory(storyContent[index], storyText, 50, () => {
+                    // 当前段落显示完成后，等待用户点击继续下一段
+                    storyOverlay.onclick = () => {
+                        storyOverlay.onclick = null; // 移除当前的点击事件防止重复触发
+                        showStoryContent(index + 1); // 显示下一段
+                    };
+                });
             } else {
-                endGuide()
+                // 所有段落显示完毕后隐藏遮罩层并开始引导
+                storyOverlay.classList.add('hidden');
+                startGuide(); // 假设有一个函数启动引导
             }
         }
-    }
 
-    function endGuide() {
-        document.body.removeChild(guideOverlay)
-    }
+        // 显示剧情遮罩层并开始展示内容
+        storyOverlay.classList.remove('hidden');
+        showStoryContent(); // 从第一段开始展示
 
-    showGuideStep(currentStep)
+        // 引导启动函数示例
+        function startGuide() {
+            console.log('引导开始'); // 这里可以替换为实际的引导启动逻辑
+            showGuideStep(currentStep);
+        }
+
+        // 引导步骤和展示逻辑
+        const guideSteps = [{
+            elementId: 'btn1',
+            message: '這個按鈕判斷音頻是否為全真。'
+        }, {
+            elementId: 'btn2',
+            message: '這個按鈕判斷音頻是否為合成。'
+        }, {
+            elementId: 'audio-icon',
+            message: '點擊這裡播放或暫停音頻。'
+        }, {
+            elementId: 'player-hp',
+            message: '這是玩家的血量條，若AI 判斷與實際影片相同則減少。'
+        }, {
+            elementId: 'ai-hp',
+            message: '這是AI的血量條，若玩家判斷與實際影片相同則減少。'
+        }, {
+            elementId: 'combined-bar',
+            message: '這是總分進度條，顯示玩家和AI的得分比例，悬停在上方可以看到玩家和AI的答中總數比較。'
+        }];
+
+        // 引导功能的其他部分代码保持不变
+        let currentStep = 0;
+
+        // 创建引导覆盖层
+        const guideOverlay = document.createElement('div');
+        guideOverlay.style.position = 'fixed';
+        guideOverlay.style.top = 0;
+        guideOverlay.style.left = 0;
+        guideOverlay.style.width = '100%';
+        guideOverlay.style.height = '100%';
+        guideOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        guideOverlay.style.zIndex = 1000;
+        guideOverlay.style.display = 'flex';
+        guideOverlay.style.justifyContent = 'center';
+        guideOverlay.style.alignItems = 'center';
+        guideOverlay.style.color = '#fff';
+        guideOverlay.style.textAlign = 'center';
+        guideOverlay.style.padding = '20px';
+        guideOverlay.style.cursor = 'pointer';
+        document.body.appendChild(guideOverlay);
+
+        const guideText = document.createElement('div');
+        guideText.style.maxWidth = '600px';
+        guideText.style.fontSize = '24px';
+        guideOverlay.appendChild(guideText);
+
+        // 引导步骤显示函数
+        function showGuideStep(step) {
+            const {
+                elementId,
+                message
+            } = guideSteps[step];
+            const element = document.getElementById(elementId);
+
+            // 正常的引导步骤
+            element.style.zIndex = 1001;
+            element.style.position = 'relative';
+            element.style.boxShadow = '0 0 10px 5px rgba(255, 255, 255, 0.8)';
+
+            guideText.textContent = message;
+
+            guideOverlay.onclick = () => {
+                element.style.zIndex = '';
+                element.style.boxShadow = '';
+                currentStep++;
+                if (currentStep < guideSteps.length) {
+                    showGuideStep(currentStep);
+                } else {
+                    endGuide();
+                }
+            };
+        }
+
+        function endGuide() {
+            console.log('引导结束'); // 这里可以替换为实际的引导结束逻辑
+            isGuideActive = false;
+            wavesurfer.play();
+            document.body.removeChild(guideOverlay);
+        }
+    });
 
     // ---- 辅助函数 ----
     function showTurnInfo(turnInfo) {
