@@ -594,9 +594,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 15px rgba(0, 0, 0, 0.7);
             border: 1px solid #555;
             transition: background 0.3s ease-in-out;
-            /* 平滑背景变化 */
         }
-        /* 光线扫描动画容器 */
         
         .combined-scoreboard::after {
             content: '';
@@ -608,19 +606,11 @@
             background: rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.5);
             transform: skewX(-20deg);
-            transition: opacity 0.3s ease;
-            opacity: 0;
-            /* 默认隐藏光线 */
-        }
-        /* hover 时显示光线扫描动画 */
-        
-        .combined-scoreboard:hover::after {
             animation: scan 1.5s infinite;
-            /* 光线扫描动画 */
+            /* 自动播放光线扫描动画 */
             opacity: 1;
-            /* 显示光线 */
+            /* 确保光线可见 */
         }
-        /* 光线扫描动画关键帧 */
         
         @keyframes scan {
             0% {
@@ -635,10 +625,7 @@
             height: 100%;
             border-radius: 15px;
             transition: background 0.3s ease-in-out;
-            /* 平滑背景变化 */
         }
-        /* 添加 CSS 样式来设置 Tooltip 的位置和显示效果 */
-        /* CSS 样式定义 Tooltip */
         
         .score-tooltip {
             position: absolute;
@@ -649,10 +636,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
             font-size: 14px;
             display: none;
-            /* 初始隐藏 */
             transition: opacity 0.3s ease;
             pointer-events: none;
-            /* 使 Tooltip 不影响鼠标事件 */
         }
         
         .story-overlay {
@@ -1069,12 +1054,14 @@
                     showAIJudgment('合成音频')
                 }
             }
-
-            turnGlo = 1
-            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
-            setTimeout(() => {
-                loadNextAudio()
-            }, 3000)
+            checkGameOver()
+            if (playerHP > 0) {
+                turnGlo = 1
+                updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+                setTimeout(() => {
+                    loadNextAudio()
+                }, 3000)
+            }
         }
     }
 
