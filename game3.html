@@ -942,6 +942,12 @@
         audioPlayer.play()
     }
 
+    function StopAudio(audioPath) {
+        const audioPlayer = document.getElementById('audioPlayer')
+        audioPlayer.src = audioPath
+        audioPlayer.pause()
+    }
+
     // ---- 回合切换及评估 ----
     function updateTurn(turnGlo) {
         const turnInfo = document.getElementById('turn-info')
@@ -1491,6 +1497,7 @@
         function showStoryContent(index = 0) {
             if (index < storyContent.length) {
                 storyText.textContent = ''; // 清空之前的内容
+                playAudio("static/audio/623A5218338544.mp3")
                 typeStory(storyContent[index], storyText, 50, () => {
                     // 当前段落显示完成后，等待用户点击继续下一段
                     storyOverlay.onclick = () => {
@@ -1512,6 +1519,7 @@
         // 引导启动函数示例
         function startGuide() {
             console.log('引导开始'); // 这里可以替换为实际的引导启动逻辑
+            StopAudio("static/audio/623A5218338544.mp3")
             showGuideStep(currentStep);
         }
 
