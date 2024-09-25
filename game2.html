@@ -1000,11 +1000,6 @@
                     await playAudio(correctAudioPath)
                 }
 
-                // 当AI的血量清0时
-                if (aiHP === 0) {
-                    handleAIFaint() // 处理AI失败后的逻辑
-                    aiATK = 0
-                }
             } else {
                 console.log('Player wrong')
                 judge = false
@@ -1027,30 +1022,37 @@
 
             updateTurn(turnGlo)
         } else if (turnGlo === 2) {
+            if (aiHP <= 0) {
+                handleAIFaint() // 处理AI失败后的逻辑
+                aiATK = 0
+                turnGlo = 1;
+                updateTurn(turnGlo);
+            }
             // 模型的回合
-            if (modelPrediction === actualType) {
-                attackEffect(2)
-                console.log('model win')
-                updateScore('ai')
-                playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
-                showDamage(damageX2, damageY2, aiATK)
-                playAudio(heart)
-                updateHPBar('player-hp', playerHP, playerMax)
-                triggerFlickerEffect('player-img')
-                takeHit('player-img')
-                showAIJudgment('全真音频')
-                if (modelPrediction == 'r') {
+            else if (modelPrediction === actualType) {
+                if (playerHP > 0 || aiHP > 0) {
+                    attackEffect(2)
+                    playAudio(heart)
+                    console.log('model win')
+                    updateScore('ai')
+                    playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
+                    showDamage(damageX2, damageY2, aiATK)
+                    updateHPBar('player-hp', playerHP, playerMax)
+                    triggerFlickerEffect('player-img')
+                    takeHit('player-img')
+                    showAIJudgment('全真音频')
+
                     aijudge = true
-                } else {
-                    aijudge = false
+                    updateBattleLogjudge(aijudge, '木馬老高')
+                    updateBattleLog('木馬老高', aiATK, '玩家')
                 }
-                updateBattleLogjudge(aijudge, '木馬老高')
-                updateBattleLog('木馬老高', aiATK, '玩家')
             } else {
                 if (modelPrediction == 'nullans') {
                     console.log('ERROR101')
                 } else {
                     console.log('model wrong')
+                    aijudge = false
+                    updateBattleLogjudge(aijudge, '木馬老高')
                     showAIJudgment('合成音频')
                 }
             }
