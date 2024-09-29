@@ -33,8 +33,11 @@
         }
         
         .header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            /* 让所有子元素排列在同一行 */
+            /* 在元素之间均匀分布空间 */
+            align-items: center;
+            /* 垂直居中对齐 */
             padding: 10px;
             background-color: #282c34;
             color: #fff;
@@ -584,7 +587,9 @@
         }
         
         .combined-scoreboard {
-            width: 70%;
+            left: 12%;
+            width: 780px;
+            /* 设定进度条的宽度 */
             height: 30px;
             background-color: #333;
             border-radius: 15px;
@@ -674,6 +679,54 @@
         .hidden {
             display: none;
         }
+        
+        #skip-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 32px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+        
+        #skip-btn:hover {
+            background-color: white;
+            color: black;
+            transform: scale(1.1);
+            /* 放大按钮 */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.4);
+            /* 添加白色阴影 */
+        }
+        
+        .score-display {
+            color: white;
+            /* 设置文字颜色 */
+            font-size: 20px;
+            /* 设置字体大小 */
+            text-align: center;
+            /* 让文字居中 */
+            margin-top: 10px;
+            /* 增加顶部的间距 */
+            padding: 5px 10px;
+            /* 内边距，让文字周围留空 */
+            background-color: rgba(0, 0, 0, 0.6);
+            /* 添加半透明背景，增强对比度 */
+            border-radius: 8px;
+            /* 设置圆角 */
+            width: 450px;
+            /* 设置固定宽度 */
+            height: 40px;
+            /* 设置固定高度 */
+            line-height: 40px;
+            /* 让文字垂直居中 */
+            display: inline-block;
+            /* 让其保持在一行内 */
+        }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
 </head>
@@ -681,17 +734,22 @@
 <body>
     <div id="story-overlay" class="story-overlay">
         <div id="story-text" class="story-text"></div>
+        <button id="skip-btn">
+            SKIP
+        </button>
     </div>
     <div class="header">
         <div class="audio">
             <div id="audio-icon" class="play-icon"></div>
         </div>
+        <div class="score-display">
+            玩家分数: <span id="player-score">0</span> (<span id="player-percentage">0%</span>) | AI 分数: <span id="ai-score">0</span> (<span id="ai-percentage">0%</span>)
+        </div>
         <div class="combined-scoreboard" id="combined-bar">
             <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
         </div>
         <div id="score-tooltip" class="score-tooltip hidden">
-            玩家答对: <span id="player-correct">0</span> 题
-            <br> AI答对: <span id="ai-correct">0</span> 题
+            玩家撃敗AI: <span id="player-correct">0</span> 次
         </div>
     </div>
     <div id="turn-info" class="turn-info">
@@ -775,10 +833,12 @@
     var playerPrediction = ''
     let judge = false
     let aijudge = false
-    let playerScore = 50
-    let aiScore = 50
-    let correctAnswers = 0 // 玩家答对题数
+    let playerScore = 0;
+    let aiScore = 0;
+    let totalwin = 0;
+    const maxScore = 6;
     let totalQuestions = 0 // 总题数
+    let totalaiQuestions = 0
     let isGuideActive = true;
     // 定义玩家和 AI 的位置
     var playerPosition = {
@@ -815,18 +875,18 @@
 
     // 监听 combined-bar 的鼠标进入事件，显示 Tooltip
     combinedBar.addEventListener('mouseenter', function(event) {
-        // 更新 Tooltip 的内容
-        playerCorrectDisplay.textContent = correctAnswers;
-        aiCorrectDisplay.textContent = totalQuestions - correctAnswers;
+        // Update the Tooltip content
+        playerCorrectDisplay.textContent = `${totalwin}`; // Change hover text for player
+        // Change hover text for AI
 
-        // 获取 combined-bar 的位置
+        // Get the combined-bar position
         const rect = combinedBar.getBoundingClientRect();
 
-        // 设置 Tooltip 的位置在 combined-bar 上方居中
-        scoreTooltip.style.top = `${rect.top - scoreTooltip.offsetHeight - 10}px`; // 上方显示并与 bar 保持 10px 距离
-        scoreTooltip.style.left = `${rect.left + rect.width / 2 - scoreTooltip.offsetWidth / 2}px`; // 居中显示
+        // Set Tooltip's position
+        scoreTooltip.style.top = `${rect.top - scoreTooltip.offsetHeight - 10}px`;
+        scoreTooltip.style.left = `${rect.left + rect.width / 2 - scoreTooltip.offsetWidth / 2}px`;
 
-        // 显示 Tooltip
+        // Display Tooltip
         scoreTooltip.style.display = 'block';
     });
 
@@ -942,13 +1002,16 @@
 
     // ---- 回合切换及评估 ----
     function updateTurn(turnGlo) {
+
         const turnInfo = document.getElementById('turn-info')
         const turnText = document.getElementById('turn-text')
         if (turnGlo === 1 && !gameover) {
             turnText.textContent = '玩家回合'
+            totalQuestions++;
             disableButtons(false) // 启用按钮，允许玩家操作
             showTImage()
         } else if (turnGlo === 2) {
+            totalaiQuestions++;
             disableButtons(true) // 禁用按钮，防止玩家操作
             turnText.textContent = '模型回合'
             setTimeout(() => {
@@ -1024,7 +1087,7 @@
         } else if (turnGlo === 2) {
             if (aiHP <= 0) {
                 handleAIFaint() // 处理AI失败后的逻辑
-                aiATK = 0
+                totalaiQuestions--;
                 turnGlo = 1;
                 updateTurn(turnGlo);
             }
@@ -1280,9 +1343,9 @@
                         showTextAnimated(newText)
 
                         if (aiFainted) {
+                            updatetotalScore()
                             handleAINewPokemon()
                             aiFainted = false // 重置标志
-                            aiATK = 1
                         }
                     })
                 } else {
@@ -1456,6 +1519,14 @@
 
     // ---- 引导功能 ----
     document.addEventListener('DOMContentLoaded', function() {
+        const skipBtn = document.getElementById('skip-btn');
+
+        // 添加点击事件，直接启动引导并隐藏故事
+        skipBtn.addEventListener('click', function() {
+            storyOverlay.classList.add('hidden'); // 隐藏故事遮罩层
+            StopAudio("static/audio/623A5218338544.mp3")
+            startGuide(); // 启动引导功能
+        });
         // 分段后的故事内容
         const storyContent = [
             `在一個科技高度發展的未來世界，著名的科普部落客兼科技先鋒老高自願參與了一項突破性的腦機介面計畫。該計畫旨在將先進的人工智慧系統——「高智」，整合到人類大腦中，以全面增強認知能力、記憶力和決策能力。作為專案的主要測試對象，老高的大腦中成功嵌入了高智AI系統。`,
@@ -1538,7 +1609,7 @@
             message: '這是AI的血量條，若玩家判斷與實際影片相同則減少。'
         }, {
             elementId: 'combined-bar',
-            message: '這是總分進度條，顯示玩家和AI的得分比例，悬停在上方可以看到玩家和AI的答中總數比較。'
+            message: '這是總分進度條，顯示玩家打敗AI的次數'
         }];
 
         // 引导功能的其他部分代码保持不变
@@ -1761,39 +1832,41 @@
     }
 
     function updateScore(winner) {
-        totalQuestions++
-
         if (winner === 'player') {
-            correctAnswers++
-            playerScore += 10 // 玩家得分增加
-            playerScore = Math.min(playerScore, 100) // 限制最大值为100
-            aiScore = 100 - playerScore // AI得分相应减少
-        } else if (winner === 'ai') {
-            correctAnswers = 0 // 连续答对被打断
-            aiScore += 10 // AI得分增加
-            aiScore = Math.min(aiScore, 100) // 限制最大值为100
-            playerScore = 100 - aiScore // 玩家得分相应减少
+            playerScore++; // Increment the score by 1
+        } else {
+            aiScore++;
         }
+        updateScoreDisplay()
+    }
 
-        updateScoreBar()
-        checkGameOver()
+    function updatetotalScore() {
+        totalwin++;
+        updateScoreBar(); // Update the scoreboard visually
+        checkGameOver();
+    }
+
+    function updateScoreDisplay() {
+        const playerPercentage = totalQuestions > 0 ? ((playerScore / totalQuestions) * 100).toFixed(2) : 0;
+        const aiPercentage = totalaiQuestions > 0 ? ((aiScore / totalaiQuestions) * 100).toFixed(2) : 0;
+        document.getElementById('player-score').textContent = playerScore; // 只更新玩家分数
+        document.getElementById('ai-score').textContent = aiScore;
+
+        document.getElementById('player-percentage').textContent = `${playerPercentage}%`; // 玩家百分比
+        document.getElementById('ai-percentage').textContent = `${aiPercentage}%`;
     }
 
     function updateScoreBar() {
-        const combinedBar = document.getElementById('combined-bar')
+        const combinedBar = document.getElementById('combined-bar');
+        const playerPercentage = (totalwin / maxScore) * 100; // Calculate percentage
 
-        // 计算玩家和 AI 的得分比例
-        const playerPercentage = playerScore
-        const aiPercentage = aiScore
-
-        // 设置背景为动态的线性渐变，根据分数更新分割线
-        combinedBar.style.background = `linear-gradient(135deg, #4caf50 ${playerPercentage}%, #f44336 ${playerPercentage}%)`
+        combinedBar.style.background = `linear-gradient(65deg,	#53FF53 ${playerPercentage}%, #ddd ${playerPercentage}%)`;
     }
 
     function checkGameOver() {
-        if (playerScore >= 100) {
+        if (totalwin >= maxScore) {
             displayGameOver('玩家赢了！')
-        } else if (aiScore >= 100 || playerHP <= 0) {
+        } else if (playerHP <= 0) {
             displayGameOver('AI赢了！')
         }
     }
@@ -1817,7 +1890,7 @@
         messageElement.textContent = message
 
         const scoreElement = document.createElement('p')
-        scoreElement.textContent = `玩家答對了 ${correctAnswers} / ${totalQuestions} 題`
+        scoreElement.textContent = `玩家答對了 ${playerScore} / ${totalQuestions} 題`
 
         const restartButton = document.createElement('button')
         restartButton.textContent = '重新開始'
