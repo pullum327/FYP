@@ -33,8 +33,11 @@
         }
         
         .header {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            /* 让所有子元素排列在同一行 */
+            /* 在元素之间均匀分布空间 */
+            align-items: center;
+            /* 垂直居中对齐 */
             padding: 10px;
             background-color: #282c34;
             color: #fff;
@@ -42,6 +45,7 @@
         
         .audio {
             position: relative;
+            left: 5%;
         }
         
         .player .hp-bar,
@@ -102,6 +106,7 @@
             background-image: url('static\\images\\background.png');
             /* position: relative; 移除 */
             /* height: 405px; 移除，允许高度自适应 */
+            flex-wrap: wrap;
         }
         
         .player,
@@ -342,9 +347,9 @@
         }
         
         #audio-icon {
-            width: 40px;
-            height: 40px;
-            left: 20%;
+            width: 50px;
+            height: 50px;
+            left: 30%;
             background-size: contain;
             background-repeat: no-repeat;
             cursor: pointer;
@@ -582,7 +587,9 @@
         }
         
         .combined-scoreboard {
-            width: 70%;
+            left: 22%;
+            width: 780px;
+            /* 设定进度条的宽度 */
             height: 30px;
             background-color: #333;
             border-radius: 15px;
@@ -592,9 +599,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 15px 15px rgba(0, 0, 0, 0.7);
             border: 1px solid #555;
             transition: background 0.3s ease-in-out;
-            /* 平滑背景变化 */
         }
-        /* 光线扫描动画容器 */
         
         .combined-scoreboard::after {
             content: '';
@@ -606,19 +611,11 @@
             background: rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.5);
             transform: skewX(-20deg);
-            transition: opacity 0.3s ease;
-            opacity: 0;
-            /* 默认隐藏光线 */
-        }
-        /* hover 时显示光线扫描动画 */
-        
-        .combined-scoreboard:hover::after {
             animation: scan 1.5s infinite;
-            /* 光线扫描动画 */
+            /* 自动播放光线扫描动画 */
             opacity: 1;
-            /* 显示光线 */
+            /* 确保光线可见 */
         }
-        /* 光线扫描动画关键帧 */
         
         @keyframes scan {
             0% {
@@ -633,10 +630,7 @@
             height: 100%;
             border-radius: 15px;
             transition: background 0.3s ease-in-out;
-            /* 平滑背景变化 */
         }
-        /* 添加 CSS 样式来设置 Tooltip 的位置和显示效果 */
-        /* CSS 样式定义 Tooltip */
         
         .score-tooltip {
             position: absolute;
@@ -647,10 +641,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
             font-size: 14px;
             display: none;
-            /* 初始隐藏 */
             transition: opacity 0.3s ease;
             pointer-events: none;
-            /* 使 Tooltip 不影响鼠标事件 */
         }
         
         .story-overlay {
@@ -687,6 +679,56 @@
         .hidden {
             display: none;
         }
+        
+        #skip-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 32px;
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+        
+        #skip-btn:hover {
+            background-color: white;
+            color: black;
+            transform: scale(1.1);
+            /* 放大按钮 */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.4);
+            /* 添加白色阴影 */
+        }
+        
+        .score-display {
+            position: absolute;
+            left: 10%;
+            color: white;
+            /* 设置文字颜色 */
+            font-size: 20px;
+            /* 设置字体大小 */
+            text-align: center;
+            /* 让文字居中 */
+            margin-top: 10px;
+            /* 增加顶部的间距 */
+            padding: 5px 10px;
+            /* 内边距，让文字周围留空 */
+            background-color: rgba(0, 0, 0, 0.6);
+            /* 添加半透明背景，增强对比度 */
+            border-radius: 8px;
+            /* 设置圆角 */
+            width: 450px;
+            /* 设置固定宽度 */
+            height: 40px;
+            /* 设置固定高度 */
+            line-height: 40px;
+            /* 让文字垂直居中 */
+            display: inline-block;
+            /* 让其保持在一行内 */
+        }
     </style>
     <script src="https://unpkg.com/wavesurfer.js"></script>
 </head>
@@ -694,17 +736,23 @@
 <body>
     <div id="story-overlay" class="story-overlay">
         <div id="story-text" class="story-text"></div>
+        <button id="skip-btn">
+            SKIP
+        </button>
     </div>
     <div class="header">
         <div class="audio">
             <div id="audio-icon" class="play-icon"></div>
         </div>
-        <div class="combined-scoreboard" id="combined-bar"></div>
-        <div id="score-tooltip" class="score-tooltip hidden">
-            玩家答对: <span id="player-correct">0</span> 题
-            <br> AI答对: <span id="ai-correct">0</span> 题
+        <div class="score-display">
+            玩家分数: <span id="player-score">0</span> (<span id="player-percentage">0%</span>) | AI 分数: <span id="ai-score">0</span> (<span id="ai-percentage">0%</span>)
         </div>
-    </div>
+        <div class="combined-scoreboard" id="combined-bar">
+            <!-- 进度条的背景颜色由 JavaScript 动态更新 -->
+        </div>
+        <div id="score-tooltip" class="score-tooltip hidden">
+            玩家撃敗AI: <span id="player-correct">0</span> 次
+        </div>
     </div>
     <div id="turn-info" class="turn-info">
         <p id="turn-text">玩家回合</p>
@@ -771,9 +819,9 @@
 <script>
     // ---- 全局变量定义 ----
     var multiatknum = 1
-    var playerHP = 10
+    var playerHP = 5
     var playerATK = 1
-    var playerMax = 10
+    var playerMax = 5
     var aiHP = 2
     var aiATK = 1
     let gameover = false
@@ -787,10 +835,12 @@
     var playerPrediction = ''
     let judge = false
     let aijudge = false
-    let playerScore = 50;
-    let aiScore = 50;
-    let correctAnswers = 0; // 玩家答对题数
-    let totalQuestions = 0; // 总题数
+    let playerScore = 0;
+    let aiScore = 0;
+    let totalwin = 0;
+    const maxScore = 6;
+    let totalQuestions = 0 // 总题数
+    let totalaiQuestions = 0
     let isGuideActive = true;
     // 定义玩家和 AI 的位置
     var playerPosition = {
@@ -984,12 +1034,13 @@
         const damageY2 = playerRect.top
 
         if (turnGlo === 1) {
+            totalQuestions++;
             // 玩家的回合
             if (playerPrediction === actualType) {
                 console.log('Player win')
-                judge = true;
-                updateBattleLogjudge(judge, '玩家');
-                updateBattleLog('玩家', playerATK * multiatknum, 'AI');
+                judge = true
+                updateBattleLogjudge(judge, '玩家')
+                updateBattleLog('玩家', playerATK * multiatknum, 'AI')
                 updateScore('player')
 
                 attackEffect(1)
@@ -999,7 +1050,7 @@
                 updateHPBar('ai-hp', aiHP, aiMax)
                 triggerFlickerEffect('ai-img')
                 takeHit('ai-img')
-                    // updateBattleLog('玩家', playerChoice, actual, playerATK);
+
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'green' // 正确时btn1变为绿色
                     await playAudio(correctAudioPath)
@@ -1008,15 +1059,10 @@
                     await playAudio(correctAudioPath)
                 }
 
-                // 当AI的血量清0时
-                if (aiHP === 0) {
-                    handleAIFaint() // 处理AI失败后的逻辑
-                    aiATK = 0
-                }
             } else {
                 console.log('Player wrong')
-                judge = false;
-                updateBattleLogjudge(judge, '玩家');
+                judge = false
+                updateBattleLogjudge(judge, '玩家')
                 if (playerPrediction === 'r') {
                     btn1.style.backgroundColor = 'red' // 错误时btn1变为红色
                     await playAudio(wrongAudioPath)
@@ -1035,39 +1081,49 @@
 
             updateTurn(turnGlo)
         } else if (turnGlo === 2) {
+            totalaiQuestions++;
+            if (aiHP <= 0) {
+                handleAIFaint() // 处理AI失败后的逻辑
+                totalaiQuestions--;
+                turnGlo = 1;
+                updateTurn(turnGlo);
+            }
             // 模型的回合
-            if (modelPrediction === actualType) {
-                attackEffect(2)
-                console.log('model win')
-                updateScore('ai')
-                playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
-                showDamage(damageX2, damageY2, aiATK)
-                playAudio(heart)
-                updateHPBar('player-hp', playerHP, playerMax)
-                triggerFlickerEffect('player-img')
-                takeHit('player-img')
-                showAIJudgment('全真音频')
-                if (modelPrediction == 'r') {
-                    aijudge = true;
-                } else {
-                    aijudge = false;
+            else if (modelPrediction === actualType) {
+                if (playerHP > 0 || aiHP > 0) {
+                    attackEffect(2)
+                    playAudio(heart)
+                    console.log('model win')
+                    updateScore('ai')
+                    playerHP = Math.max(0, playerHP - aiATK) // 减少玩家的 HP
+                    showDamage(damageX2, damageY2, aiATK)
+                    updateHPBar('player-hp', playerHP, playerMax)
+                    triggerFlickerEffect('player-img')
+                    takeHit('player-img')
+                    showAIJudgment('全真音频')
+
+                    aijudge = true
+                    updateBattleLogjudge(aijudge, '木馬老高')
+                    updateBattleLog('木馬老高', aiATK, '玩家')
                 }
-                updateBattleLogjudge(aijudge, '木馬老高');
-                updateBattleLog('木馬老高', aiATK, '玩家');
             } else {
                 if (modelPrediction == 'nullans') {
                     console.log('ERROR101')
                 } else {
                     console.log('model wrong')
+                    aijudge = false
+                    updateBattleLogjudge(aijudge, '木馬老高')
                     showAIJudgment('合成音频')
                 }
             }
-
-            turnGlo = 1
-            updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
-            setTimeout(() => {
-                loadNextAudio();
-            }, 3000);
+            checkGameOver()
+            if (playerHP > 0) {
+                turnGlo = 1
+                updateTurn(turnGlo) // 更新回合信息并启动玩家的回合
+                setTimeout(() => {
+                    loadNextAudio()
+                }, 3000)
+            }
         }
     }
 
@@ -1183,7 +1239,11 @@
         if (currentBackgroundImage.includes('wenqian.png')) {
             aiImgElement.style.backgroundImage = "url('static/images/wenqian_fainted.png')"
         }
-
+        aiMax += 3 + Math.floor(Math.random() * 3); // 每次增加3到5点HP
+        aiATK += 1 + Math.floor(Math.random() * 1);
+        aiHP = aiMax
+        updateAIBattleLog(aiMax)
+        animateHPBar('ai-hp', aiMax)
         aiFainted = true // 标记AI已经失败
 
         if (playerItems.length < 20) {
@@ -1352,15 +1412,15 @@
         const logEntry = document.createElement('div')
         switch (item) {
             case 'increase_hp_max':
-                playerMax += 2 // 增加最大 HP
-                playerHP = Math.min(playerMax, playerHP + 2)
+                playerMax += 4 // 增加最大 HP
+                playerHP = Math.min(playerMax, playerHP + 4)
                 logEntry.textContent = `玩家最大血量增加為${playerMax}`
                 battleLog.appendChild(logEntry)
                 battleLog.scrollTop = battleLog.scrollHeight
                 break
             case 'restore_hp':
-                playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
-                logEntry.textContent = `玩家恢復 5 HP`
+                playerHP = Math.min(playerMax, playerHP + 7) // 恢复 5 HP
+                logEntry.textContent = `玩家恢復 7 HP`
                 battleLog.appendChild(logEntry)
                 battleLog.scrollTop = battleLog.scrollHeight
                 break
@@ -1459,6 +1519,14 @@
 
     // ---- 引导功能 ----
     document.addEventListener('DOMContentLoaded', function() {
+        const skipBtn = document.getElementById('skip-btn');
+
+        // 添加点击事件，直接启动引导并隐藏故事
+        skipBtn.addEventListener('click', function() {
+            storyOverlay.classList.add('hidden'); // 隐藏故事遮罩层
+            StopAudio("static/audio/623A5218338544.mp3")
+            startGuide(); // 启动引导功能
+        });
         // 分段后的故事内容
         const storyContent = [
             `在一個科技高度發展的未來世界，著名的科普部落客兼科技先鋒老高自願參與了一項突破性的腦機介面計畫。該計畫旨在將先進的人工智慧系統——「高智」，整合到人類大腦中，以全面增強認知能力、記憶力和決策能力。作為專案的主要測試對象，老高的大腦中成功嵌入了高智AI系統。`,
@@ -1541,7 +1609,7 @@
             message: '這是AI的血量條，若玩家判斷與實際影片相同則減少。'
         }, {
             elementId: 'combined-bar',
-            message: '這是總分進度條，顯示玩家和AI的得分比例，悬停在上方可以看到玩家和AI的答中總數比較。'
+            message: '這是總分進度條，顯示玩家打敗AI的次數'
         }];
 
         // 引导功能的其他部分代码保持不变
@@ -1604,6 +1672,7 @@
             document.body.removeChild(guideOverlay);
         }
     });
+
 
     // ---- 辅助函数 ----
     function showTurnInfo(turnInfo) {
@@ -1765,76 +1834,107 @@
     }
 
     function updateScore(winner) {
-        totalQuestions++;
-
         if (winner === 'player') {
-            correctAnswers++;
-            playerScore += 10; // 玩家得分增加
-            if (correctAnswers > 1) {
-                playerScore += 5; // 连续答对增加更多分数
-            }
-            playerScore = Math.min(playerScore, 100); // 限制最大值为100
-            aiScore = 100 - playerScore; // AI得分相应减少
-        } else if (winner === 'ai') {
-            correctAnswers = 0; // 连续答对被打断
-            aiScore += 10; // AI得分增加
-            aiScore = Math.min(aiScore, 100); // 限制最大值为100
-            playerScore = 100 - aiScore; // 玩家得分相应减少
+            playerScore++; // Increment the score by 1
+        } else {
+            aiScore++;
         }
+        updateScoreDisplay()
+    }
 
-        updateScoreBar();
+    function updatetotalScore() {
+        totalwin++;
+        updateScoreBar(); // Update the scoreboard visually
         checkGameOver();
+    }
+
+    function updateScoreDisplay() {
+        const playerPercentage = totalQuestions > 0 ? ((playerScore / totalQuestions) * 100).toFixed(2) : 0;
+        const aiPercentage = totalaiQuestions > 0 ? ((aiScore / totalaiQuestions) * 100).toFixed(2) : 0;
+
+        document.getElementById('player-score').textContent = playerScore; // 只更新玩家分数
+        console.log(totalQuestions);
+        document.getElementById('ai-score').textContent = aiScore;
+
+        document.getElementById('player-percentage').textContent = `${playerPercentage}%`; // 玩家百分比
+        document.getElementById('ai-percentage').textContent = `${aiPercentage}%`;
     }
 
     function updateScoreBar() {
         const combinedBar = document.getElementById('combined-bar');
+        const playerPercentage = (totalwin / maxScore) * 100; // 计算新的百分比
+        const currentBackground = combinedBar.style.background; // 获取当前背景样式
+        const match = currentBackground.match(/(\d+(\.\d+)?)%/); // 使用正则表达式提取当前百分比
 
-        // 计算玩家和 AI 的得分比例
-        const playerPercentage = playerScore;
-        const aiPercentage = aiScore;
+        // 获取当前的百分比，如果没有则默认为0
+        let currentPercentage = match ? parseFloat(match[1]) : 0;
 
-        // 设置背景为动态的线性渐变，根据分数更新分割线
-        combinedBar.style.background = `linear-gradient(135deg, #4caf50 ${playerPercentage}%, #f44336 ${playerPercentage}%)`;
+        // 动画持续时间
+        const duration = 1000; // 1秒
+        const frameRate = 60; // 每秒帧数
+        const increment = (playerPercentage - currentPercentage) / (duration / frameRate); // 每帧增加的百分比
+
+        // 动画函数
+        function animate() {
+            currentPercentage += increment;
+
+            // 检查是否到达目标百分比
+            if ((increment > 0 && currentPercentage >= playerPercentage) ||
+                (increment < 0 && currentPercentage <= playerPercentage)) {
+                currentPercentage = playerPercentage; // 防止超过目标值
+            }
+
+            // 更新背景渐变
+            combinedBar.style.background = `linear-gradient(65deg, #53FF53 ${currentPercentage}%, #ddd ${currentPercentage}%)`;
+
+            // 如果还没到目标值，则继续调用动画
+            if (currentPercentage !== playerPercentage) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        // 开始动画
+        requestAnimationFrame(animate);
     }
 
 
     function checkGameOver() {
-        if (playerScore >= 100) {
-            displayGameOver('玩家赢了！');
-        } else if (aiScore >= 100 || playerHP <= 0) {
-            displayGameOver('AI赢了！');
+        if (totalwin >= maxScore) {
+            displayGameOver('玩家赢了！')
+        } else if (playerHP <= 0) {
+            displayGameOver('AI赢了！')
         }
     }
 
     function displayGameOver(message) {
-        const gameOverPage = document.createElement('div');
-        gameOverPage.style.position = 'fixed';
-        gameOverPage.style.top = '0';
-        gameOverPage.style.left = '0';
-        gameOverPage.style.width = '100%';
-        gameOverPage.style.height = '100%';
-        gameOverPage.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        gameOverPage.style.display = 'flex';
-        gameOverPage.style.flexDirection = 'column';
-        gameOverPage.style.alignItems = 'center';
-        gameOverPage.style.justifyContent = 'center';
-        gameOverPage.style.color = 'white';
-        gameOverPage.style.zIndex = '10000';
+        const gameOverPage = document.createElement('div')
+        gameOverPage.style.position = 'fixed'
+        gameOverPage.style.top = '0'
+        gameOverPage.style.left = '0'
+        gameOverPage.style.width = '100%'
+        gameOverPage.style.height = '100%'
+        gameOverPage.style.backgroundColor = 'rgba(0, 0, 0, 0.9)'
+        gameOverPage.style.display = 'flex'
+        gameOverPage.style.flexDirection = 'column'
+        gameOverPage.style.alignItems = 'center'
+        gameOverPage.style.justifyContent = 'center'
+        gameOverPage.style.color = 'white'
+        gameOverPage.style.zIndex = '10000'
 
-        const messageElement = document.createElement('h1');
-        messageElement.textContent = message;
+        const messageElement = document.createElement('h1')
+        messageElement.textContent = message
 
-        const scoreElement = document.createElement('p');
-        scoreElement.textContent = `玩家答對了 ${correctAnswers} / ${totalQuestions} 題`;
+        const scoreElement = document.createElement('p')
+        scoreElement.textContent = `玩家答對了 ${playerScore} / ${totalQuestions} 題`
 
-        const restartButton = document.createElement('button');
-        restartButton.textContent = '重新開始';
-        restartButton.onclick = () => location.reload();
+        const restartButton = document.createElement('button')
+        restartButton.textContent = '重新開始'
+        restartButton.onclick = () => location.reload()
 
-        gameOverPage.appendChild(messageElement);
-        gameOverPage.appendChild(scoreElement);
-        gameOverPage.appendChild(restartButton);
-        document.body.appendChild(gameOverPage);
+        gameOverPage.appendChild(messageElement)
+        gameOverPage.appendChild(scoreElement)
+        gameOverPage.appendChild(restartButton)
+        document.body.appendChild(gameOverPage)
     }
 </script>
 

@@ -45,6 +45,7 @@
         
         .audio {
             position: relative;
+            left: 5%;
         }
         
         .player .hp-bar,
@@ -347,9 +348,9 @@
         }
         
         #audio-icon {
-            width: 40px;
-            height: 40px;
-            left: 20%;
+            width: 50px;
+            height: 50px;
+            left: 30%;
             background-size: contain;
             background-repeat: no-repeat;
             cursor: pointer;
@@ -475,7 +476,7 @@
             border-radius: 10px;
             opacity: 0;
             transition: opacity 1s ease-in-out;
-            z-index: 1000;
+            z-index: 900;
             text-align: center;
         }
         
@@ -587,7 +588,7 @@
         }
         
         .combined-scoreboard {
-            left: 12%;
+            left: 22%;
             width: 780px;
             /* 设定进度条的宽度 */
             height: 30px;
@@ -704,6 +705,8 @@
         }
         
         .score-display {
+            position: absolute;
+            left: 10%;
             color: white;
             /* 设置文字颜色 */
             font-size: 20px;
@@ -1007,11 +1010,11 @@
         const turnText = document.getElementById('turn-text')
         if (turnGlo === 1 && !gameover) {
             turnText.textContent = '玩家回合'
-            totalQuestions++;
+
             disableButtons(false) // 启用按钮，允许玩家操作
             showTImage()
         } else if (turnGlo === 2) {
-            totalaiQuestions++;
+
             disableButtons(true) // 禁用按钮，防止玩家操作
             turnText.textContent = '模型回合'
             setTimeout(() => {
@@ -1039,6 +1042,7 @@
         const damageY2 = playerRect.top
 
         if (turnGlo === 1) {
+            totalQuestions++;
             // 玩家的回合
             if (playerPrediction === actualType) {
                 console.log('Player win')
@@ -1085,6 +1089,7 @@
 
             updateTurn(turnGlo)
         } else if (turnGlo === 2) {
+            totalaiQuestions++;
             if (aiHP <= 0) {
                 handleAIFaint() // 处理AI失败后的逻辑
                 totalaiQuestions--;
@@ -1271,7 +1276,7 @@
 
         // 增加AI的最大HP并重置当前HP
         aiMax += 3 + Math.floor(Math.random() * 3); // 每次增加3到5点HP
-        aiATK += 1 + Math.floor(Math.random() * 2);
+        aiATK += 1 + Math.floor(Math.random() * 1);
         aiHP = aiMax
         updateAIBattleLog(aiMax)
         animateHPBar('ai-hp', aiMax)
@@ -1413,15 +1418,15 @@
         const logEntry = document.createElement('div')
         switch (item) {
             case 'increase_hp_max':
-                playerMax += 2 // 增加最大 HP
-                playerHP = Math.min(playerMax, playerHP + 2)
+                playerMax += 4 // 增加最大 HP
+                playerHP = Math.min(playerMax, playerHP + 4)
                 logEntry.textContent = `玩家最大血量增加為${playerMax}`
                 battleLog.appendChild(logEntry)
                 battleLog.scrollTop = battleLog.scrollHeight
                 break
             case 'restore_hp':
-                playerHP = Math.min(playerMax, playerHP + 5) // 恢复 5 HP
-                logEntry.textContent = `玩家恢復 5 HP`
+                playerHP = Math.min(playerMax, playerHP + 7) // 恢复 5 HP
+                logEntry.textContent = `玩家恢復 7 HP`
                 battleLog.appendChild(logEntry)
                 battleLog.scrollTop = battleLog.scrollHeight
                 break
@@ -1774,6 +1779,7 @@
                 clearInterval(decisionTimer)
                 document.body.removeChild(countdownElement)
                 playerPrediction = 'n' // Default incorrect value
+                totalQuestions++;
                 evaluateGuess(1)
                 hideTImage()
                 disableButtons(true)
@@ -1849,7 +1855,9 @@
     function updateScoreDisplay() {
         const playerPercentage = totalQuestions > 0 ? ((playerScore / totalQuestions) * 100).toFixed(2) : 0;
         const aiPercentage = totalaiQuestions > 0 ? ((aiScore / totalaiQuestions) * 100).toFixed(2) : 0;
+
         document.getElementById('player-score').textContent = playerScore; // 只更新玩家分数
+        console.log(totalQuestions);
         document.getElementById('ai-score').textContent = aiScore;
 
         document.getElementById('player-percentage').textContent = `${playerPercentage}%`; // 玩家百分比
@@ -1858,10 +1866,41 @@
 
     function updateScoreBar() {
         const combinedBar = document.getElementById('combined-bar');
-        const playerPercentage = (totalwin / maxScore) * 100; // Calculate percentage
+        const playerPercentage = (totalwin / maxScore) * 100; // 计算新的百分比
+        const currentBackground = combinedBar.style.background; // 获取当前背景样式
+        const match = currentBackground.match(/(\d+(\.\d+)?)%/); // 使用正则表达式提取当前百分比
 
-        combinedBar.style.background = `linear-gradient(65deg,	#53FF53 ${playerPercentage}%, #ddd ${playerPercentage}%)`;
+        // 获取当前的百分比，如果没有则默认为0
+        let currentPercentage = match ? parseFloat(match[1]) : 0;
+
+        // 动画持续时间
+        const duration = 1000; // 1秒
+        const frameRate = 60; // 每秒帧数
+        const increment = (playerPercentage - currentPercentage) / (duration / frameRate); // 每帧增加的百分比
+
+        // 动画函数
+        function animate() {
+            currentPercentage += increment;
+
+            // 检查是否到达目标百分比
+            if ((increment > 0 && currentPercentage >= playerPercentage) ||
+                (increment < 0 && currentPercentage <= playerPercentage)) {
+                currentPercentage = playerPercentage; // 防止超过目标值
+            }
+
+            // 更新背景渐变
+            combinedBar.style.background = `linear-gradient(65deg, #53FF53 ${currentPercentage}%, #ddd ${currentPercentage}%)`;
+
+            // 如果还没到目标值，则继续调用动画
+            if (currentPercentage !== playerPercentage) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+        // 开始动画
+        requestAnimationFrame(animate);
     }
+
 
     function checkGameOver() {
         if (totalwin >= maxScore) {
